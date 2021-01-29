@@ -1,6 +1,6 @@
 #!/bin/bash
 tag=eip-base/jdk
-
+##test
 docker build -t $tag:latest .
 
 if test "$1" != ""; then
