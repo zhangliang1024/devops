@@ -8,3 +8,5 @@ if test "$1" != ""; then
   docker tag $tag:latest $tag:$1
   docker push $tag:$1
 fi
+
+## test git push github
