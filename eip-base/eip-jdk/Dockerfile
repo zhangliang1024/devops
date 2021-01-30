@@ -24,10 +24,8 @@ ENV PINPOINT_PROFILER_TRANSPORT_SPAN_COLLECTOR_PORT=9993
 ENV PINPOINT_DEBUG_LEVEL=INFO
 
 
-# 配置时区
-ENV TIME_ZONE Asia/Shanghai
-RUN echo "${TIME_ZONE}" > /etc/timezone \
-  && ln -sf /usr/share/zoneinfo/${TIME_ZONE} /etc/localtime \
+RUN cp /pinpoint-agent/pinpoint-agent-2.1.0/ . \
+  && rm -rf pinpoint-agent-2.1.0 \
   && chmod +x /config-pinpoint-agent.sh \
   && chmod +x /entrypoint.sh
 
