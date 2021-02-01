@@ -14,7 +14,7 @@ else
   JAR_FILE_RENAME=$JAR_FILE_NAME
 fi
 
-/config-pinpoint-agent.sh
+config-pinpoint-agent.sh.bak
 
 JAVA_OPTS=""
 

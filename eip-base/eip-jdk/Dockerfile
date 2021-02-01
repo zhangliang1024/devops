@@ -1,6 +1,6 @@
 FROM openjdk:8-jre
 
-MAINTAINER zhliang <zhangliang_job@126.com>
+MAINTAINER zhliang <zhangliang1024_job@126.com>
 
 ARG PINPOINT_COLLECTOR_IP
 ARG PINPOINT_PROFILER_SAMPLING_RATE
@@ -24,8 +24,8 @@ ENV PINPOINT_PROFILER_TRANSPORT_SPAN_COLLECTOR_PORT=9993
 ENV PINPOINT_DEBUG_LEVEL=INFO
 
 
-RUN cp /pinpoint-agent/pinpoint-agent-2.1.0/ . \
-  && rm -rf pinpoint-agent-2.1.0 \
+RUN mv /pinpoint-agent/pinpoint-agent-2.1.0/* /pinpoint-agent/ \
+  && rm -rf /pinpoint-agent/pinpoint-agent-2.1.0 \
   && chmod +x /config-pinpoint-agent.sh \
   && chmod +x /entrypoint.sh
 
