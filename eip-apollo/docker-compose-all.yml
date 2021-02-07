@@ -69,7 +69,7 @@ services:
         PROTAL_SERVER_PORT: 8070
     image: apollo-portal
     ports:
-      - "8070:"
+      - "8070"
     volumes:
       - "/opt/logs/portal/100003173:/opt/logs/100003173"
       - "/toony/apollo-dev/apollo/apollo-portal/config/apollo-env.properties:/apollo-portal/config/apollo-env.properties"       
