@@ -1,0 +1,89 @@
+version: "3.2"    
+services:  
+  apollo-configservice:
+    container_name: apollo-configservice
+    build:
+      context: apollo-configservice/
+      args:
+        CONFIG_SERVER_PORT: 8080
+    image: apollo-configservice
+    ports:
+      - "8080" 
+    volumes:
+      - "/opt/logs/config/100003171:/opt/logs/100003171"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://182.61.41.102:3306/apolloconfigdb?characterEncoding=utf8
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=123456
+      - EUREKA.INSTANCE.IP-ADDRESS=182.61.41.102
+    restart: always
+    network_mode: host
+    # deploy目前版本没有起作用
+    deploy:
+      resources:
+         limits:
+            cpus: '0.3'
+            memory: 300M
+         reservations:
+            cpus: '0.2'
+            memory: 200M
+
+  apollo-adminservice:
+    depends_on:
+      - apollo-configservice
+    container_name: apollo-adminservice
+    build:
+      context: apollo-adminservice/
+      args:
+        CONFIG_SERVER_PORT: 8080
+        ADMIN_SERVER_PORT: 8090
+    image: apollo-adminservice
+    ports:
+      - "8090"
+    volumes:
+      - "/opt/logs/admin/100003172:/opt/logs/100003172"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://182.61.41.102:3306/apolloconfigdb?characterEncoding=utf8
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=123456
+      - EUREKA.INSTANCE.IP-ADDRESS=182.61.41.102
+    restart: always
+    network_mode: host
+    deploy:
+      resources:
+         limits:
+            cpus: '0.3'
+            memory: 300M
+         reservations:
+            cpus: '0.2'
+            memory: 200M
+
+  apollo-portall:
+    depends_on:
+      - apollo-configservice
+      - apollo-adminservice
+    container_name: apollo-portal
+    build:
+      context: apollo-portal/
+      args:
+        PROTAL_SERVER_PORT: 8070
+    image: apollo-portal
+    ports:
+      - "8070:"
+    volumes:
+      - "/opt/logs/portal/100003173:/opt/logs/100003173"
+      - "/toony/apollo-dev/apollo/apollo-portal/config/apollo-env.properties:/apollo-portal/config/apollo-env.properties"       
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://182.61.41.102:3306/apolloportaldb?characterEncoding=utf8
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=123456
+    restart: always
+    network_mode: host    
+    deploy:
+      resources:
+         limits:
+            cpus: '0.3'
+            memory: 300M
+         reservations:
+            cpus: '0.2'
+            memory: 200M

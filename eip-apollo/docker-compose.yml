@@ -1,0 +1,58 @@
+version: "3.2"
+services:
+  apollo-configservice-dev:
+    container_name: apollo-configservice-dev
+    build:
+      context: apollo-configservice/
+      args:
+        PROTAL_SERVER_PORT: 9081
+    image: apollo-configservice-dev
+    ports:
+    - "9081"
+    volumes:
+    - "/opt/logs/dev/100003171:/opt/logs/100003171"
+    environment:
+    - SPRING_DATASOURCE_URL=jdbc:mysql://10.0.17.122:3306/apolloconfigdbdev?characterEncoding=utf8
+    - SPRING_DATASOURCE_USERNAME=root
+    - SPRING_DATASOURCE_PASSWORD=Pdhn^456
+    - EUREKA.INSTANCE.IP-ADDRESS=10.0.17.92
+    restart: always
+    network_mode: host
+    deploy:
+      resources:
+        limits:
+          cpus: '0.3'
+          memory: 300M
+        reservations:
+          cpus: '0.2'
+          memory: 200M
+
+  apollo-adminservice-dev:
+    depends_on:
+      - apollo-configservice
+    container_name: apollo-adminservice-dev
+    build:
+      context: apollo-adminservice/
+      args:
+        CONFIG_SERVER_PORT: 9081
+        ADMIN_SERVER_PORT: 9091
+    image: apollo-adminservice-dev
+    ports:
+    - "9091"
+    volumes:
+    - "/opt/logs/dev/100003172:/opt/logs/100003172"
+    environment:
+    - SPRING_DATASOURCE_URL=jdbc:mysql://10.0.17.122:3306/apolloconfigdbdev?characterEncoding=utf8
+    - SPRING_DATASOURCE_USERNAME=root
+    - SPRING_DATASOURCE_PASSWORD=Pdhn^456
+    - EUREKA.INSTANCE.IP-ADDRESS=10.0.17.92
+    restart: always
+    network_mode: host
+    deploy:
+      resources:
+        limits:
+          cpus: '0.3'
+          memory: 300M
+        reservations:
+          cpus: '0.2'
+          memory: 200M
