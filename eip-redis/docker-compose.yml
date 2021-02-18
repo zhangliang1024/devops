@@ -1,0 +1,35 @@
+version: '3'
+services:
+  redis-master:
+    container_name: redis-node01
+    image: docker.io/redis:6.0.7-alpine
+    volumes:
+    - /data/redis/config/node01:/usr/local/etc/redis
+    network_mode: "host"
+    restart: always
+    command: redis-server /usr/local/etc/redis/redis.conf --appendonly yes --appendfsync everysec
+    labels:
+      registory: 'office-registry'
+      editor: 'huyindu'
+  redis-salve:
+    container_name: redis-node02
+    image: docker.io/redis:6.0.7-alpine
+    volumes:
+    - /data/redis/config/node02:/usr/local/etc/redis
+    network_mode: "host"
+    restart: always
+    command: redis-server /usr/local/etc/redis/redis.conf --appendonly yes --appendfsync everysec
+    labels:
+      registory: 'office-registry'
+      editor: 'huyindu'
+  redis-slave:
+    container_name: redis-node03
+    image: docker.io/redis:6.0.7-alpine
+    volumes:
+    - /data/redis/config/node03:/usr/local/etc/redis
+    network_mode: "host"
+    restart: always
+    command: redis-server /usr/local/etc/redis/redis.conf --appendonly yes --appendfsync everysec
+    labels:
+      registory: 'office-registry'
+      editor: 'huyindu'
