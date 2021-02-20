@@ -8,3 +8,19 @@
 
 ### 修改 `dev.meta` 地址
 > `apollo-portal/confg/apollo-env.properteis` 配置文件
+
+
+### 部署方式
+> `docker-compose -f docker-compose-config.yaml --compatibility up`  
+>
+>  由于做了资源限制, 并且没有使用`swarm`, 所以要加上`--compatibility`参数, 不然资源限制会被忽略
+```bash
+[root@instance-n2fyaecn apollo]# docker-compose -f docker-compose-config.yaml --compatibility up
+WARNING: The following deploy sub-keys are not supported in compatibility mode and have been ignored: resources.reservations.cpus
+Building apollo-configservice
+Step 1/11 : FROM openjdk:8-jre-alpine
+ ---> f7a292bbb70c
+Step 2/11 : MAINTAINER ameizi <sxyx2008@163.com>
+ ---> Using cache
+ ---> 57883df07038
+```
