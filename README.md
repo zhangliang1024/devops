@@ -5,3 +5,9 @@
 >
 > 使用命令：cat -v clean_none_images.sh
 
+
+> 执行一个容器，循环打印。不让容器退出
+```bash
+$ docker run -d eip-base/jdk:latest /bin/sh -c "while true;do echo hello zzyy;sleep 2;done"
+```
+
