@@ -1,0 +1,22 @@
+version: "3"
+services:
+  seata-server:
+    image: seataio/seata-server:1.3.0
+    container_name: seata-server
+    hostname: seata-server
+    ports:
+    - "8091:8091"
+    volumes:
+    - "/opt/seata/config:/root/seata/config"
+    - "/opt/seata/config/libs/mysql-connector-java-8.0.21.jar:/root/seata/config/libs/mysql-connector-java-8.0.21.jar"
+    environment:
+    - SEATA_CONFIG_NAME=file:/root/seata/config/registry
+    - SEATA_IP=10.0.17.92
+    - SEATA_PORT=8091
+      - STORE_MODE=db
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '0.3'
+          memory: 300M
