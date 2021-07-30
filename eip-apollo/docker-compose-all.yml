@@ -10,7 +10,7 @@ services:
     ports:
       - "8080" 
     volumes:
-      - "/opt/logs/config/100003171:/opt/logs/100003171"
+      - "/opt/logs/8080/100003171:/opt/logs/100003171"
     environment:
       - SPRING_DATASOURCE_URL=jdbc:mysql://182.61.41.102:3306/apolloconfigdb?characterEncoding=utf8
       - SPRING_DATASOURCE_USERNAME=root
@@ -41,7 +41,7 @@ services:
     ports:
       - "8090"
     volumes:
-      - "/opt/logs/admin/100003172:/opt/logs/100003172"
+      - "/opt/logs/8090/100003172:/opt/logs/100003172"
     environment:
       - SPRING_DATASOURCE_URL=jdbc:mysql://182.61.41.102:3306/apolloconfigdb?characterEncoding=utf8
       - SPRING_DATASOURCE_USERNAME=root
@@ -71,8 +71,8 @@ services:
     ports:
       - "8070"
     volumes:
-      - "/opt/logs/portal/100003173:/opt/logs/100003173"
-      - "/toony/apollo-dev/apollo/apollo-portal/config/apollo-env.properties:/apollo-portal/config/apollo-env.properties"       
+      - "/opt/logs/8070/100003173:/opt/logs/100003173"
+      - "/opt/apollo/apollo-devops/apollo-portal/config/apollo-env.properties:/apollo-portal/config/apollo-env.properties"
     environment:
       - SPRING_DATASOURCE_URL=jdbc:mysql://182.61.41.102:3306/apolloportaldb?characterEncoding=utf8
       - SPRING_DATASOURCE_USERNAME=root

@@ -1,0 +1,28 @@
+version: "3.2"
+services:
+  apollo-portal:
+    container_name: apollo-portal
+    build:
+      context: apollo-portal/
+      args:
+        PROTAL_SERVER_PORT: 8070
+    image: apollo-portal
+    ports:
+      - "8070"
+    volumes:
+      - "/opt/logs/8070/100003173:/opt/logs/100003173"
+      - "/opt/apollo/apollo-devops/apollo-portal/config/apollo-env.properties:/apollo-portal/config/apollo-env.properties"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://10.0.17.117:3306/apolloportal8070?characterEncoding=utf8
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=Pdhn^456
+    restart: always
+    network_mode: host
+    deploy:
+      resources:
+        limits:
+          cpus: '0.3'
+          memory: 300M
+        reservations:
+          cpus: '0.2'
+          memory: 200M
