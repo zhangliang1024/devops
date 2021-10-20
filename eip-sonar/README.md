@@ -209,6 +209,7 @@ preview-sonar:
 * ★★ [sonarqube使用教程](https://www.cnblogs.com/lvlinguang/p/15192380.html)
 * ★★★ [gitlab配合Sonar实现提交后自动代码检测](https://www.jianshu.com/p/8cdcb99abe72)
 * ★★★ [Gitlab与Sonarqube整合-代码提交自动检测](https://www.cnblogs.com/ioops/p/14313195.html)
+* ★★★ [Docker搭建sonarqube](https://blog.51cto.com/u_1153710/2774251)
 * ★★ [使用docker搭建sonarqube](https://www.cnblogs.com/m1996/p/14596382.html)
 * [Docker安装并持久化PostgreSQL数据](https://jeecg.blog.csdn.net/article/details/100104145)
 * [Docker: SonarQube 8.1安装问题](https://blog.csdn.net/Allan_shore_ma/article/details/104395900)
@@ -221,4 +222,3 @@ preview-sonar:
 * ★★ [sonarqube + jenkins + maven 项目分析](https://blog.csdn.net/dabaoting/article/details/113932549)
 * [使用sonar-maven-plugin插件执行sonar扫描](https://www.jianshu.com/p/72431fe45d9e)
 
-* []()

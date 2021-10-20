@@ -124,6 +124,10 @@ Build Pipeline
 Parameterized Trigger
 Parameterized Remote Trigger
 Localization: Chinese (Simplified)
+
+DingTalk
+Qy Wechat Notification
+build monitor view
 ```
 ![](https://ae03.alicdn.com/kf/H74d6477bb5e0415f99b1d679156c386dj.png)
 
@@ -218,6 +222,7 @@ sonar.scm.disabled=true
 * [Docker手把手部署jenkins教程,jenkins容器带jdk,maven,docker,git](https://blog.csdn.net/u011526721/article/details/109481400)
 * [Jenkins的安装及中文展示、安装插件创建](https://blog.csdn.net/yeyslspi59/article/details/107345085/)
 * [jenkins 中文设置/中文插件](https://blog.csdn.net/cbuy888/article/details/89873892)
+* ★ [jenkins部署](https://blog.csdn.net/taihexuelang/article/details/91044521)
 
 --- 
 * ★★ [配置Jenkins自动拉取gitlab中的代码并部署](https://blog.csdn.net/lee_yanyi/article/details/116235292)
@@ -225,3 +230,9 @@ sonar.scm.disabled=true
 ---
 * ★★ [sonarQube部署及Jenkins集成sonarQube](https://blog.csdn.net/weixin_44455388/article/details/120181946)
 * [jenkins+sonar 持续集成检测代码质量](https://www.cnblogs.com/shenh/p/13525602.html)
+
+---
+
+* [Jenkins发布后-企业微信通知](https://www.cnblogs.com/Huanggang-like/p/14841337.html)
+* [Jenkins配置钉钉通知](https://www.cnblogs.com/wangxu01/articles/11149851.html)
+* [jenkins视图插件build monitor view](https://blog.csdn.net/testdeveloper/article/details/51743355)

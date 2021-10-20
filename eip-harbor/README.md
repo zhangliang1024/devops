@@ -155,6 +155,7 @@ systemctl restart docker
 
 ### 六、参考文档
 * ★★★ [Docker镜像仓库Harbor搭建](https://www.cnblogs.com/chinda/p/12776675.html)
+* ★★ [企业级Docker Registry Harbor搭建和使用](https://www.cnblogs.com/zhaojiankai/p/7822135.html)
 
 * [Harbor密码重置 密码修改 admin密码重置](https://www.cnblogs.com/dalianpai/p/11795826.html)
 * [docker登录私仓失败:because it doesn‘t contain any IP SANs](https://blog.csdn.net/qq_37377136/article/details/107995620)
