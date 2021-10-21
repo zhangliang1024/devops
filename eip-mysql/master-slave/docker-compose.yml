@@ -1,0 +1,29 @@
+version: '3'
+services:
+  mysql-master:
+    container_name: mysql-master
+    image: mysql:5.7
+    ports:
+      - "3307:3306"
+    volumes:
+      - /toony/mysql-master/log:/var/log/mysql
+      - /toony/mysql-master/data:/var/lib/mysql
+      - /toony/mysql-master/conf:/etc/mysql
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=123456
+      - COMPOSE_PROJECT_NAME=mysql-server
+
+  mysql-slave:
+    container_name: mysql-slave
+    image: mysql:5.7
+    ports:
+    - "3308:3306"
+    volumes:
+    - /toony/mysql-slave/log:/var/log/mysql
+    - /toony/mysql-slave/data:/var/lib/mysql
+    - /toony/mysql-slave/conf:/etc/mysql
+    restart: always
+    environment:
+    - MYSQL_ROOT_PASSWORD=123456
+    - COMPOSE_PROJECT_NAME=mysql-server

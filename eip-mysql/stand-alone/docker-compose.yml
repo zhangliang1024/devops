@@ -6,9 +6,9 @@ services:
     ports:
       - "3306:3306"
     volumes:
-      - /mydata/mysql/log:/var/log/mysql
-      - /mydata/mysql/data:/var/lib/mysql
-      - /mydata/mysql/conf:/etc/mysql
+      - /toony/mysql/log:/var/log/mysql
+      - /toony/mysql/data:/var/lib/mysql
+      - /toony/mysql/conf:/etc/mysql
     restart: always
     environment:
       - MYSQL_ROOT_PASSWORD=123456
