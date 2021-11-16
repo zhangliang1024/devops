@@ -1,0 +1,19 @@
+version: '3.3'
+services:
+  app:
+    image: "tikazyq/artipub:latest"
+    environment:
+      MONGO_HOST: "mongo"
+      ARTIPUB_API_ADDRESS: "http://182.61.41.102:3000"
+    ports:
+    - "8000:8000"
+    - "3000:3000"
+    depends_on:
+    - mongo
+  mongo:
+    image: mongo:latest
+    restart: always
+    volumes:
+    - "/toony/artipub/data:/data/db"
+    ports:
+    - "27017:27017"
