@@ -1,0 +1,46 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    monitor: 'spring-cloud-demo'
+
+scrape_configs:
+- job_name: node
+  scrape_interval: 10s
+  static_configs:
+  - targets: ['node-exporter:9100']
+
+- job_name: springboot
+  scrape_interval: 10s
+  metrics_path: /actuator/prometheus
+  static_configs:
+  - targets: ['182.42.116.245:8761']
+    labels:
+      application: eureka-server
+      instance: eureka-server-svc
+
+
+
+#- job_name: organization-service
+#  scrape_interval: 10s
+#  metrics_path: /actuator/prometheus
+#  static_configs:
+#  - targets: [ 'organization-service:8085' ]
+#    labels:
+#      application: organization-app
+#      instance: organization-svc
+#  basic_auth:
+#    username: actuator
+#    password: actuator
+#
+#- job_name: license-service
+#  scrape_interval: 10s
+#  metrics_path: /actuator/prometheus
+#  static_configs:
+#  - targets: [ 'license-service:8080' ]
+#    labels:
+#      application: license-app
+#      instance: license-svc
+#  basic_auth:
+#    username: actuator
+#    password: actuator
