@@ -1,4 +1,8 @@
 # 基于`Docker`部署`skywalking`实现全链路追踪
+> `Skywalking`是一个可观测性分析平台(`Observability Analysis Platform`简称OAP) 和 应用性能管理系统
+(`Application Performance Management`简称APM)
+> - 提供分布式链路追踪、服务网格(`Service Mesh`)遥测分析、度量聚合和可视化一体解决方案
+> - [官方下载地址](http://skywalking.apache.org/downloads/)
 
 ### 一、环境说明
 ```properties
@@ -9,6 +13,48 @@
 ```
 
 #### - 环境安装
+##### 二进制安装
+> 运行`bin目录`下的`startup.sh`脚本即可启动`skywalking`服务
+```bash
+[root@localhost ~]# cd /usr/local/src
+[root@localhost /usr/local/src]# wget http://mirrors.tuna.tsinghua.edu.cn/apache/skywalking/6.6.0/apache-skywalking-apm-6.6.0.tar.gz
+[root@localhost /usr/local/src]# mkdir ../skywalking && tar -zxvf apache-skywalking-apm-6.6.0.tar.gz -C ../skywalking --strip-components 1
+[root@localhost /usr/local/src]# cd ../skywalking/
+[root@localhost /usr/local/skywalking]# ll -rh  # 解压后的目录文件如下
+total 88K
+drwxr-xr-x 2 root root   53 Dec 28 18:22 webapp
+-rw-rw-r-- 1 1001 1002 2.0K Dec 24 14:10 README.txt
+drwxrwxr-x 2 1001 1002  12K Dec 24 14:28 oap-libs
+-rwxrwxr-x 1 1001 1002  32K Dec 24 14:10 NOTICE
+drwxrwxr-x 3 1001 1002 4.0K Dec 28 18:22 licenses
+-rwxrwxr-x 1 1001 1002  29K Dec 24 14:10 LICENSE
+drwxr-xr-x 2 root root  221 Dec 28 18:22 config
+drwxr-xr-x 2 root root  241 Dec 28 18:22 bin
+drwxrwxr-x 8 1001 1002  143 Dec 24 14:21 agent
+[root@localhost /usr/local/skywalking]# 
+[root@localhost /usr/local/skywalking]# bin/startup.sh
+SkyWalking OAP started successfully!
+SkyWalking Web Application started successfully!
+[root@localhost /usr/local/skywalking]#
+```
+> - SkyWalking控制台服务默认监听8080端口，若有防火墙需要开放该端口：
+> - 若希望允许远程传输，则还需要开放11800（gRPC）和12800（rest）端口，远程agent将通过该端口传输收集的数据：
+```bash
+[root@localhost /usr/local/skywalking]# firewall-cmd --zone=public --add-port=8080/tcp --permanent
+success
+[root@localhost /usr/local/skywalking]# firewall-cmd --reload
+success
+[root@localhost /usr/local/skywalking]#
+[root@localhost /usr/local/skywalking]# firewall-cmd --zone=public --add-port=11800/tcp --permanent
+success
+[root@localhost /usr/local/skywalking]# firewall-cmd --zone=public --add-port=12800/tcp --permanent
+success
+[root@localhost /usr/local/skywalking]# firewall-cmd --reload
+success
+[root@localhost /usr/local/skywalking]#
+```
+
+---
 ##### 1. 安装`docker`
 ```bash
 sudo yum remove docker*
@@ -163,10 +209,215 @@ docker run --name skywalking-ui \
 [root@cm3g /]# tar -zxvf apache-skywalking-apm-8.7.0.tar.gz
 [root@cm3g /]# java -javaagent:home/skywalking/agent/skywalking-agent.jar -Dskywalking.agent.service_name=eureka-server -Dskywalking.collector.backend_service=192.168.x.130:11800 -jar eureka-server.jar
 ```
-![](https://ae03.alicdn.com/kf/Hc6b5a560eba14e36918b771fecf7eeadc.png)
+![](https://ae05.alicdn.com/kf/H30a80f6439624f5999df39d415eb45e5j.png)
+
+### 七、日志集成`TraceId`
+- `pom.xml`
+```xml
+<!--logback-->
+<dependency>
+    <groupId>org.apache.skywalking</groupId>
+    <artifactId>apm-toolkit-logback-1.x</artifactId>
+    <version>8.7.0</version>
+</dependency>
+<!--log4j2-->
+<dependency>
+    <groupId>org.apache.skywalking</groupId>
+    <artifactId>apm-toolkit-log4j-2.x</artifactId>
+    <version>8.7.0</version>
+</dependency>
+```
+- `logback-spring.xml`
+```xml
+<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+        <!--加上skywalking的追踪id-->
+        <layout class="org.apache.skywalking.apm.toolkit.log.logback.v1.x.TraceIdPatternLogbackLayout">
+            <Pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%tid] [%thread] %-5level %logger{36} -%msg%n</Pattern>
+        </layout>
+    </encoder>
+</appender>
+<!-- skywalking grpc 日志收集 8.4.0版本开始支持 -->
+    <appender name="grpc-log" class="org.apache.skywalking.apm.toolkit.log.logback.v1.x.log.GRPCLogClientAppender">
+        <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+            <layout class="org.apache.skywalking.apm.toolkit.log.logback.v1.x.mdc.TraceIdMDCPatternLogbackLayout">
+                <Pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%tid] [%thread] %-5level %logger{36} -%msg%n</Pattern>
+            </layout>
+        </encoder>
+    </appender>
+
+```
+
+### 八、获取`TraceId`
+> 通过`MDC`获取不到`traceId`，可以通过手动追踪`API`方式来获取
+```xml
+<dependency>
+    <groupId>org.apache.skywalking</groupId>
+    <artifactId>apm-toolkit-trace</artifactId>
+    <version>8.7.0</version>
+</dependency>
+```
+- 方式
+```java
+import org.apache.skywalking.apm.toolkit.trace.TraceContext;
+
+String traceId = TraceContext.traceId();  
+```
+
+### 九、告警`WebHook`
+
+- `alarm-settings.yml`配置`WebHook`
+```yml
+rules:
+  # 规则唯一名称，必须以'_rule'结尾.
+  service_resp_time_rule:
+    # 度量名称，也是OAL脚本中的度量名，目前Service, Service Instance, Endpoint的度量可以用于告警
+    metrics-name: service_resp_time
+    # [可选]默认，匹配此指标中的所有服务
+    include-names:
+      - service_a
+      - service_b
+    exclude-names:
+      - service_c
+    # 阈值，对于多种指标值的如percentile可以配置P50、P75、P90、P95、P99的阈值
+    threshold: 75
+    # 操作符
+    op: <
+    # 评估度量标准的时间长度
+    period: 10
+    # 度量有多少次符合告警条件后，才会触发告警
+    count: 3
+    # 检查多少次，告警触发后保持沉默，默认周期相同
+    silence-period: 10
+    # 该规则触发时，发送的通知消息
+    message: Response time of service {name} is more than 50ms in 1 minutes of last 1 minutes.
+
+webhooks: 
+  - http://ip:port/skyWalking/alarm
+```
+
+- `pom.xml`
+```xml
+<dependency>
+    <groupId>com.aliyun</groupId>
+    <artifactId>alibaba-dingtalk-service-sdk</artifactId>
+    <version>1.0.1</version>
+</dependency>
+
+<dependency>
+    <groupId>commons-codec</groupId>
+    <artifactId>commons-codec</artifactId>
+    <version>1.15</version>
+</dependency>
+
+<dependency>
+    <groupId>com.alibaba</groupId>
+    <artifactId>fastjson</artifactId>
+    <version>1.2.75</version>
+</dependency>
+```
+- 代码
+```java
+@Data
+public class AlarmMessageDTO implements Serializable {
+
+    private int scopeId;
+    private String scope;
+    /**
+     * Target scope entity name
+     */
+    private String name;
+    private String id0;
+    private String id1;
+    private String ruleName;
+    /**
+     * Alarm text message
+     */
+    private String alarmMessage;
+    /**
+     * Alarm time measured in milliseconds
+     */
+    private long startTime;
+    
+    private List<Tag> tags;
+    private transient int period;
+    private transient boolean onlyAsCondition;
+
+}
+//------------------------ service --------------------------
+@Slf4j
+@Service
+public class DingTalkAlarmService {
+
+    @Value("${dingtalk.webhook}")
+    private String webhook;
+    @Value("${dingtalk.secret}")
+    private String secret;
+
+    public void sendMessage(String content) {
+        try {
+            Long timestamp = System.currentTimeMillis();
+            String stringToSign = timestamp + "\n" + secret;
+            Mac mac = Mac.getInstance("HmacSHA256");
+            mac.init(new SecretKeySpec(secret.getBytes("UTF-8"), "HmacSHA256"));
+            byte[] signData = mac.doFinal(stringToSign.getBytes("UTF-8"));
+            String sign = URLEncoder.encode(new String(Base64.encodeBase64(signData)), "UTF-8");
+
+            String serverUrl = webhook + "&timestamp=" + timestamp + "&sign=" + sign;
+            
+            DingTalkClient client = new DefaultDingTalkClient(serverUrl);
+            OapiRobotSendRequest request = new OapiRobotSendRequest();
+            request.setMsgtype("text");
+            OapiRobotSendRequest.Text text = new OapiRobotSendRequest.Text();
+            text.setContent(content);
+            request.setText(text);
+            client.execute(request);
+            
+        } catch (ApiException e) {
+            e.printStackTrace();
+            log.error(e.getMessage(), e);
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+            log.error(e.getMessage(), e);
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+            log.error(e.getMessage(), e);
+        } catch (InvalidKeyException e) {
+            e.printStackTrace();
+            log.error(e.getMessage(), e);
+        }
+    }
+}
+//------------------------ controller --------------------------
+@Slf4j
+@RestController
+@RequestMapping("/skywalking")
+public class AlarmController {
+
+    @Autowired
+    private DingTalkAlarmService dingTalkAlarmService;
+
+    @PostMapping("/alarm")
+    public void alarm(@RequestBody List<AlarmMessageDTO> alarmMsgList) {
+        log.info("收到告警信息: {}", JSON.toJSONString(alarmMsgList));
+        if (null != alarmMsgList) {
+            alarmMsgList.forEach(
+                    e -> dingTalkAlarmService.sendMessage(
+                            MessageFormat.format("-----来自SkyWalking的告警-----\n【名称】: {0}\n【消息】: {1}\n", 
+                                    e.getName(), e.getAlarmMessage())));
+        }
+    }
+}
+
+```
 
 
+### 十一、参考文档
+* [基于docker部署skywalking实现全链路监控](https://www.jianshu.com/p/a237d6e810c6)
+* [docker 安装 Skywalking](https://www.jianshu.com/p/cc16196df610)
 
-### 九、参考文档
-[基于docker部署skywalking实现全链路监控](https://www.jianshu.com/p/a237d6e810c6)
-[docker 安装 Skywalking](https://www.jianshu.com/p/cc16196df610)
+* [SkyWalking UI指标使用说明(3)](https://lizz6.blog.csdn.net/article/details/107535100)
+* [skywalking ui图表解释说明]()
+* [SkyWalking8配置:忽略采集跟踪路径](https://lizz6.blog.csdn.net/article/details/108059238)
+
+* [SkyWalking 8: 常见问题总结](https://my.oschina.net/osgit/blog/4558674)
