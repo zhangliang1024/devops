@@ -1,0 +1,51 @@
+filebeat.inputs:
+- type: log
+  enabled: true
+  paths:
+    - /var/log/*.log
+  scan_frequency: 10s
+  tail_files: true
+  fields:
+    index_name: "nginx_log"
+
+- type: log
+  enabled: true
+  paths:
+    - /home/logs/*.log
+  multiline.type: pattern
+  multiline.pattern: '^[[:space:]]+(at|\.{3})[[:space:]]+\b|^Caused by:'
+  multiline.negate: false
+  multiline.match: after
+  fields:
+    index_name: "eureka-log"
+
+setup.ilm.enabled: false
+setup.template.name: "my-log"
+setup.template.pattern: "my-*"
+setup.template.enabled: true
+setup.template.overwrite: false
+
+
+filebeat.config:
+  modules:
+    path: ${path.config}/modules.d/*.yml
+    reload.enabled: false
+
+processors:
+- add_cloud_metadata: ~
+- add_docker_metadata: ~
+
+
+output.elasticsearch:
+  hosts: ["elasticsearch:9200"]
+  index: "pb-%{[fields.index_name]}-*"
+  indices:
+  - index: "pb-nginx-%{+yyyy.MM.dd}"
+    when.equals:
+     fields.index_name: "nginx_log"
+  - index: "pb-eureka-%{+yyyy.MM.dd}"
+    when.equals:
+     fields.index_name: "eureka-log"
+  - index: "pb-biz-%{+yyyy.MM.dd}"
+    when.equals:
+     fields.index_name: "biz_log"

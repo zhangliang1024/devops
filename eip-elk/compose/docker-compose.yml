@@ -25,6 +25,8 @@ services:
     environment:
       - "elasticsearch.hosts=http://es:9200" #设置访问elasticsearch的地址
       - TZ=Asia/Shanghai
+    volumes:
+      - $PWD/kibana.yml:/usr/share/kibana/config/kibana.yml
     ports:
       - 5601:5601
 
