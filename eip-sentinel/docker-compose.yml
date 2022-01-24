@@ -1,0 +1,15 @@
+version: '3'
+services:
+  sentinel-dashboard:
+    build: .
+    container_name: sentinel-dashboard
+    image: sentinel-dashboard
+    ports:
+    - "8086:8080"
+    environment:
+    - NACOS_SERVER_ADDR=139.198.16.11:8848
+    - NACOS_GROUP_ID=SENTINEL_GROUP
+    - NACOS_USERNAME=nacos
+    - NACOS_PASSWORD=nacos
+    volumes:
+    - ${PWD}/logs:/root/logs
