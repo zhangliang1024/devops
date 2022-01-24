@@ -1,0 +1,47 @@
+version: "3.1"
+networks:
+  net-nacos:
+    driver: bridge
+
+services:
+  mysql:
+    image: mysql:5.7
+    container_name: mysql
+    restart: always
+    ports:
+    - "3306:3306"
+    volumes:
+    - ${PWD}/mysql/log:/var/log/mysql
+    - ${PWD}/mysql/data:/var/lib/mysql
+    - ${PWD}/mysql/conf:/etc/mysql
+    - ${PWD}/mysql/init/:/docker-entrypoint-initdb.d/
+    environment:
+      TZ: Asia/Shanghai
+      MYSQL_ROOT_PASSWORD: 123456
+      MYSQL_DATABASE: nacos
+      MYSQL_USER: nacos
+      MYSQL_PASSWORD: nacos
+      COMPOSE_PROJECT_NAME: mysql-server
+    command:
+      --max_connections=1000
+    networks:
+    - net-nacos
+
+  nacos:
+    image: nacos/nacos-server:latest
+    container_name: nacos-standalone-mysql
+    restart: always
+    ports:
+    - "8848:8848"
+    env_file:
+    - ${PWD}/env/nacos-standlone-mysql.env
+    volumes:
+    - ${PWD}/nacos/logs/:/home/nacos/logs
+    - ${PWD}/nacos/init.d/custom.properties:/home/nacos/init.d/custom.properties
+    links:
+    - mysql
+    depends_on:
+    - mysql
+    networks:
+    - net-nacos
+
