@@ -7,13 +7,13 @@ services:
     ports:
     - "8091:8091"
     volumes:
-    - "/opt/seata/config:/root/seata/config"
-    - "/opt/seata/config/libs/mysql-connector-java-8.0.21.jar:/root/seata/config/libs/mysql-connector-java-8.0.21.jar"
+    - "${PWD}/config:/root/seata/config"
+    - "${PWD}/libs/mysql-connector-java-8.0.21.jar:/root/seata/config/libs/mysql-connector-java-8.0.21.jar"
     environment:
     - SEATA_CONFIG_NAME=file:/root/seata/config/registry
     - SEATA_IP=10.0.17.92
     - SEATA_PORT=8091
-      - STORE_MODE=db
+    - STORE_MODE=db
     restart: always
     deploy:
       resources:
