@@ -6,8 +6,8 @@ services:
     ports:
      - 9876:9876
     volumes:
-      - /toony/rocketmq/logs:/opt/logs
-      - /toony/rocketmq/store:/opt/store
+      - ${PWD}/logs:/opt/logs
+      - ${PWD}/store:/opt/store
     networks:
       rmq:
         aliases:
@@ -20,9 +20,9 @@ services:
       - 10909:10909
       - 10911:10911
     volumes:
-      - /toony/rocketmq/logs:/opt/logs
-      - /toony/rocketmq/store:/opt/store
-      - /toony/rocketmq/config/broker.conf:/etc/rocketmq/broker.conf
+      - ${PWD}/logs:/opt/logs
+      - ${PWD}/store:/opt/store
+      - ${PWD}/config/broker.conf:/etc/rocketmq/broker.conf
     environment:
       NAMESRV_ADDR: "rmqnamesrv:9876"
       JAVA_OPTS: " -Duser.home=/opt"
