@@ -35,10 +35,25 @@ curl -X POST http://192.168.X.X:9090/-/reload
 ### 2.`application.yml`配置
 ```yml
 management:
+  server:
+    port: 8001 # 管理端点的端口
   endpoints:
     web:
+      base-path: /actuator # 管理端点的跟路径，默认就是/actuator
       exposure:
-        include: "*"
+        include: "*" #开启所有端点暴露
+  metrics:
+    export:
+      prometheus:
+        enabled: true  # 是否启用将指标导出到Prometheus
+        descriptions: false   # 是否将发布描述作为scrape有效负载的一部分启用到Prometheus。将其关闭以最小化每次刮擦发送的数据量。
+    distribution:
+      percentiles-histogram: #是否以指定名称开头的米ID应发布百分位直方图。
+        http.server.requests: true # 开启Micormeter
+      slo: # Micormeter bucket指标配置，千分尺分段记录
+        http.server.requests: 10ms, 20ms, 100ms, 1000ms
+    tags:
+      application: ${spring.application.name} # 增加每个指标的全局的tag，及给每个指标一个 application的 tag,值是 spring.application.name的值
 ```
 
 ## 三、使用
@@ -57,6 +72,10 @@ redis
 springboot 12900
 elasticsearch
 pod
+
+#中文
+node 8919
+node 13105
 ```
 
 

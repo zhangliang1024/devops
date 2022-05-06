@@ -201,13 +201,14 @@ docker run --name skywalking-ui \
 > - 启动参数说明：
 >   - `-javaagent:home/skywalking/agent/skywalking-agent.jar` agent的位置
 >   - `-Dskywalking.agent.service_name=` 指定服务在`skywalking`的名称
+>   - `-Dskywalking.agent.instance_name=` 指定配置实例名称
 >   - `-Dskywalking.collector.backend_service=` 指定`skywalking`的`server`地址
 ```bash
 [root@cm3g /]# cd /home/skywalking
 [root@cm3g /]# wget https://archive.apache.org/dist/skywalking/8.7.0/apache-skywalking-apm-8.7.0.tar.gz
 [root@cm3g /]# cp -r apache-skywalking-apm-bin/agent/ .
 [root@cm3g /]# tar -zxvf apache-skywalking-apm-8.7.0.tar.gz
-[root@cm3g /]# java -javaagent:home/skywalking/agent/skywalking-agent.jar -Dskywalking.agent.service_name=eureka-server -Dskywalking.collector.backend_service=192.168.x.130:11800 -jar eureka-server.jar
+[root@cm3g /]# java -javaagent:home/skywalking/agent/skywalking-agent.jar -Dskywalking.agent.service_name=eureka-server -Dskywalking.collector.backend_service=192.168.x.130:11800 -Dskywalking.agent.instance_name=192.168.100.54@eureka-server -jar eureka-server.jar
 ```
 ![](https://ae05.alicdn.com/kf/H30a80f6439624f5999df39d415eb45e5j.png)
 

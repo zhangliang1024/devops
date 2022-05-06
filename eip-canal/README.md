@@ -1,4 +1,7 @@
 # docker部署canal
+> 详细文档参考：[语雀](https://www.yuque.com/noone-5u1t7/fdbfys/qz9czu)
+
+## 一、说明
 > [`Canal`](https://github.com/alibaba/canal)是阿里巴巴开的开源项目，纯`java`开发。基于数据库增量日志解析，提供增量数订阅与消费。
 
 - 工作模式
@@ -17,7 +20,46 @@
 
 
 ## 三、组件部署
-### 1. `Mysql`部署
+### 1. 版本环境
+```properties
+mysql:5.7.18
+elasticsearch:6.4.0 
+elasticsearch-head-master  // elaticsearch Web端监控
+elasticsearch-analysis-ik:6.4.0  // elastics-ik 中文分词器（插件）
+canal.server:1.1.4   // canal数据同步server端
+canal.adapter:1.1.4  // canal数据同步适配器
+
+# 注意
+最好版本保持一致进行测试、版本不一致可能出现一系列问题，后续看升级mysql8.X可能出现的问题在最后面有列举
+
+★ 项目中实际使用版本
+mysql:5.7
+elasticsearch:7.6.2
+canal.server:1.1.5   // canal数据同步server端
+canal.adapter:1.1.5  // canal数据同步适配器
+```
+
+### 2. 镜像下载
+```properties
+# mysql
+docker pull mysql:5.7
+
+#canal相关
+docker pull canal/canal-admin:v1.1.4
+docker pull slpcat/canal-adapter:v1.1.4
+docker pull canal/canal-server:v1.1.4
+
+docker pull slpcat/canal-adapter:v1.1.5
+docker pull canal/canal-server:v1.1.5
+docker pull canal/canal-admin:v1.1.5
+
+#elasticsearch kibana
+docker pull elasticsearch:7.6.2
+docker pull kibana:7.6.2
+```
+
+### 3. 部署搭建
+#### 3-1. `Mysql`部署
 - 创建文件
 ```bash
 mkdir -p /toony/mysql/{data,conf,log}
@@ -85,19 +127,84 @@ FLUSH PRIVILEGES;
 ```
 
 - 查看`binlog`是否开启
+> 验证`mysql binlog`，`log_bin`为`ON`，则为开启`mysql binlog`
 ```bash
 show variables like 'log_bin';
 ```
 
-### 2. `canal`部署
+#### 3-2. 部署`elasticsearch`
+- 系统配置 
+```bash
+[root@i-2vpzqimj ~]# sudo vi /etc/security/limits.conf
+soft nofile 65536  
+hard nofile 65536 
+
+[root@i-2vpzqimj ~]# sudo vi /etc/sysctl.conf
+vm.max_map_count=655360
+```
+
+- 编辑配置 `elasticsearch.yml`
+```bash
+cluster.name: elasticsearch
+
+node.name: node1
+
+network.host: 0.0.0.0
+http.port: 9200
+
+http.cors.enabled: true
+http.cors.allow-origin: "*"
+
+node.master: true
+node.data: true
+```
+
+- 部署`elasticsearch`
+```bash
+#!/bin/bash
+
+docker stop elasticsearch && docker rm elasticsearch
+
+docker run --restart=always \
+      --name='elasticsearch' \
+			-p 9200:9200 -p 9300:9300 \
+      -e "discovery.type=single-node"\
+      -v /root/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml \
+      -d elasticsearch:7.6.2
+```
+
+- `kibana`部署
+```bash
+#!/bin/bash
+
+docker stop kibana && docker rm kibana
+
+docker run --name kibana \
+			--link bc1545752398:elasticsearch \
+      -p 5601:5601 \
+      -d kibana:7.6.2
+```
+> 访问  http://139.198.xx.xx:5601/
+
+
+#### 3-3. 部署`canal`
 * [docker canal-server ](https://hub.docker.com/r/canal/canal-server/tags)
 
-
-
-
-
-
-
+```bash
+#!/bin/bash
+docker stop canal-server && docker rm canal-server
+	
+docker run -d -it -h 0 \
+	-e canal.admin.manager=192.168.100.54:8089 \
+    -e canal.admin.port=11110 \
+    -e canal.admin.user=admin \
+    -e canal.admin.passwd=4ACFE3202A5FF5CF467898FC58AAB1D615029441 \
+    --name=canal-server \
+    -p 11110:11110 \
+    -p 11111:11111 \
+    -p 11112:11112 \
+    -m 1024m canal/canal-server:v1.1.5
+```
 
 
 

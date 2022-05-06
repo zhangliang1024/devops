@@ -14,7 +14,7 @@ services:
     network_mode: host # 使用host模式
     privileged: true # 拥有容器内命令执行的权限
     volumes:
-      - /mydata/redis-cluster/config:/config #配置文件目录映射到宿主机
+      - ${PWD}/config:/config #配置文件目录映射到宿主机
     entrypoint: # 设置服务默认的启动程序
       - /bin/bash
       - redis.sh
@@ -32,7 +32,7 @@ services:
     tty: true
     privileged: true
     volumes:
-      - /mydata/redis-cluster/config:/config
+      - ${PWD}/config:/config
     entrypoint:
       - /bin/bash
       - redis.sh
@@ -50,7 +50,7 @@ services:
     tty: true
     privileged: true
     volumes:
-      - /mydata/redis-cluster/config:/config
+      - ${PWD}/config:/config
     entrypoint:
       - /bin/bash
       - redis.sh
@@ -68,7 +68,7 @@ services:
     tty: true
     privileged: true
     volumes:
-      - /mydata/redis-cluster/config:/config
+      - ${PWD}/config:/config
     entrypoint:
       - /bin/bash
       - redis.sh
@@ -86,7 +86,7 @@ services:
     tty: true
     privileged: true
     volumes:
-      - /mydata/redis-cluster/config:/config
+      - ${PWD}/config:/config
     entrypoint:
       - /bin/bash
       - redis.sh
@@ -104,7 +104,7 @@ services:
     tty: true
     privileged: true
     volumes:
-      - /mydata/redis-cluster/config:/config
+      - ${PWD}/config:/config
     entrypoint:
       - /bin/bash
       - redis.sh
