@@ -1,0 +1,73 @@
+# 搭建几个从库,就需要在services中配置几个信息，开放相应端口
+version: '2'
+
+networks:
+  app-tier:
+    driver: bridge
+
+services:
+  redis:
+    image: 'bitnami/redis:latest'
+    environment:
+    - REDIS_REPLICATION_MODE=master
+    - REDIS_PASSWORD=""
+    networks:
+    - app-tier
+    ports:
+    - '6380:6379'
+
+  redis-slave:
+    image: 'bitnami/redis:latest'
+    environment:
+    - REDIS_REPLICATION_MODE=slave
+    - REDIS_MASTER_HOST=redis
+    - REDIS_MASTER_PASSWORD=""
+    - REDIS_PASSWORD=""
+    ports:
+    - '6381:6379'
+    depends_on:
+    - redis
+    networks:
+    - app-tier
+
+  redis-slave2:
+    image: 'bitnami/redis:latest'
+    environment:
+    - REDIS_REPLICATION_MODE=slave
+    - REDIS_MASTER_HOST=redis
+    - REDIS_MASTER_PASSWORD=""
+    - REDIS_PASSWORD=""
+    ports:
+    - '6382:6379'
+    depends_on:
+    - redis
+    networks:
+    - app-tier
+
+  redis-slave3:
+    image: 'bitnami/redis:latest'
+    environment:
+    - REDIS_REPLICATION_MODE=slave
+    - REDIS_MASTER_HOST=redis
+    - REDIS_MASTER_PASSWORD=""
+    - REDIS_PASSWORD=""
+    ports:
+    - '6383:6379'
+    depends_on:
+    - redis
+    networks:
+    - app-tier
+
+  redis-sentinel:
+    image: 'bitnami/redis-sentinel:latest'
+    environment:
+    - REDIS_MASTER_PASSWORD=""
+    depends_on:
+    - redis
+    - redis-slave
+    - redis-slave2
+    - redis-slave3
+    ports:
+    - '26379-26382:26379'
+    networks:
+    - app-tier

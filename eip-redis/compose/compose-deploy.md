@@ -4,7 +4,7 @@
    docker-compose up -d 
 
 2. 进入容器执行，创建集群命令
-   docker-exec -it redis-master1 /bin/bash
+   docker exec -it redis-master1 /bin/bash
    
 3. 初始化Redis集群
    redis-cli --cluster create \

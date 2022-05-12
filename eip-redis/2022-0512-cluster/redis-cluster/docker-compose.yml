@@ -1,0 +1,100 @@
+version: '3'
+services:
+  # redis1配置
+  redis1:
+    image: redis:5.0
+    container_name: redis-1
+    environment: # 环境变量
+    - PORT=6379 # 会使用config/nodes-${PORT}.conf这个配置文件
+    - TZ=Asia/Shanghai
+    ports:
+    - 6379:6379
+    - 16379:16379
+    stdin_open: true # 标准输入打开
+    tty: true # 后台运行不退出
+    privileged: true # 拥有容器内命令执行的权限
+    volumes:
+    - ${PWD}/redis-config/6379/redis.conf:/usr/local/etc/redis/redis.conf
+    - ${PWD}/redis-data/6379:/data
+    command: sh -c "redis-server /usr/local/etc/redis/redis.conf"
+  # redis2配置
+  redis2:
+    image: redis:5.0
+    container_name: redis-2
+    environment: # 环境变量
+    - PORT=6380 # 会使用config/nodes-${PORT}.conf这个配置文件
+    - TZ=Asia/Shanghai
+    ports:
+    - 6380:6380
+    - 16380:16380
+    stdin_open: true # 标准输入打开
+    tty: true # 后台运行不退出
+    privileged: true # 拥有容器内命令执行的权限
+    volumes:
+    - ${PWD}/redis-config/6380/redis.conf:/usr/local/etc/redis/redis.conf
+    - ${PWD}/redis-data/6380:/data
+    command: sh -c "redis-server /usr/local/etc/redis/redis.conf"
+  # redis3配置
+  redis3:
+    image: redis:5.0
+    container_name: redis-3
+    environment: # 环境变量
+    - PORT=6381 # 会使用config/nodes-${PORT}.conf这个配置文件
+    - TZ=Asia/Shanghai
+    ports:
+    - 6381:6381
+    - 16381:16381
+    stdin_open: true # 标准输入打开
+    tty: true # 后台运行不退出
+    volumes:
+    - ${PWD}/redis-config/6381/redis.conf:/usr/local/etc/redis/redis.conf
+    - ${PWD}/redis-data/6381:/data
+    command: sh -c "redis-server /usr/local/etc/redis/redis.conf"
+  # redis4配置
+  redis4:
+    image: redis:5.0
+    container_name: redis-4
+    environment: # 环境变量
+    - PORT=6382 # 会使用config/nodes-${PORT}.conf这个配置文件
+    - TZ=Asia/Shanghai
+    ports:
+    - 6382:6382
+    - 16382:16382
+    stdin_open: true # 标准输入打开
+    tty: true # 后台运行不退出
+    volumes:
+    - ${PWD}/redis-config/6382/redis.conf:/usr/local/etc/redis/redis.conf
+    - ${PWD}/redis-data/6382:/data
+    command: sh -c "redis-server /usr/local/etc/redis/redis.conf"
+  # redis5配置
+  redis5:
+    image: redis:5.0
+    container_name: redis-5
+    environment: # 环境变量
+    - PORT=6383 # 会使用config/nodes-${PORT}.conf这个配置文件
+    - TZ=Asia/Shanghai
+    ports:
+    - 6383:6383
+    - 16383:16383
+    stdin_open: true # 标准输入打开
+    tty: true # 后台运行不退出
+    volumes:
+    - ${PWD}/redis-config/6383/redis.conf:/usr/local/etc/redis/redis.conf
+    - ${PWD}/redis-data/6383:/data
+    command: sh -c "redis-server /usr/local/etc/redis/redis.conf"
+  # redis6配置
+  redis6:
+    image: redis:5.0
+    container_name: redis-6
+    environment: # 环境变量
+    - PORT=6384 # 会使用config/nodes-${PORT}.conf这个配置文件
+    - TZ=Asia/Shanghai
+    ports:
+    - 6384:6384
+    - 16384:16384
+    stdin_open: true # 标准输入打开
+    tty: true # 后台运行不退出
+    volumes:
+    - ${PWD}/redis-config/6384/redis.conf:/usr/local/etc/redis/redis.conf
+    - ${PWD}/redis-data/6384:/data
+    command: sh -c "redis-server /usr/local/etc/redis/redis.conf"
