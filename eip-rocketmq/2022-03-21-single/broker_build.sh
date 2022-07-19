@@ -4,6 +4,7 @@ docker stop rmqbroker && docker rm rmqbroker
 
 docker run -d \
       --name rmqbroker \
+      --restart always\
       -p 10911:10911 -p 10912:10912 -p 10909:10909 \
       -v $(pwd)/conf/broker.conf:/home/rocketmq/rocketmq-4.8.0/conf/broker.conf \
       --link rmqnamesrv:namesrv \

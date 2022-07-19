@@ -18,7 +18,7 @@ services:
     image: foxiswho/rocketmq:4.8.0
     container_name: rmqnamesrv-b
     ports:
-    - 9877:9877
+    - 9877:9876
     volumes:
     - ${PWD}/rocketmq/nameserver-b/logs:/home/rocketmq/logs
     - ${PWD}/rocketmq/nameserver-b/store:/home/rocketmq/store
@@ -36,10 +36,12 @@ services:
     volumes:
     - ${PWD}/rocketmq/broker-a/logs:/home/rocketmq/logs
     - ${PWD}/rocketmq/broker-a/store:/home/rocketmq/store
+    - ${PWD}/rocketmq/broker-a/store/commitlog:/home/rocketmq/store/commitlog
+    - ${PWD}/rocketmq/broker-a/store/consumequeue:/home/rocketmq/store/consumequeue
     - ${PWD}/broker-a/conf/broker-a.conf:/home/rocketmq/rocketmq-4.8.0/conf/broker.conf
     environment:
       TZ: Asia/Shanghai
-      NAMESRV_ADDR: "rmqnamesrv-a:9876;rmqnamesrv-b:9877"
+      NAMESRV_ADDR: "rmqnamesrv-a:9876;rmqnamesrv-b:9876"
       JAVA_OPTS: " -Duser.home=/home"
       JAVA_OPT_EXT: "-Xms512M -Xmx512M -Xmn128m"
     command: sh mqbroker -c /home/rocketmq/rocketmq-4.8.0/conf/broker.conf autoCreateTopicEnable=true &
@@ -54,18 +56,49 @@ services:
         aliases:
         - rmqbroker-a
 
+  rmqbroker-a-s:
+    image: foxiswho/rocketmq:4.8.0
+    container_name: rmqbroker-a-slave
+    ports:
+    - 11911:11911
+    volumes:
+    - ${PWD}/rocketmq/broker-a-s/logs:/home/rocketmq/logs
+    - ${PWD}/rocketmq/broker-a-s/store:/home/rocketmq/store
+    - ${PWD}/rocketmq/broker-a-s/store/commitlog:/home/rocketmq/store/commitlog
+    - ${PWD}/rocketmq/broker-a-s/store/consumequeue:/home/rocketmq/store/consumequeue
+    - ${PWD}/broker-a-s/conf/broker-a-s.conf:/home/rocketmq/rocketmq-4.8.0/conf/broker.conf
+    environment:
+      TZ: Asia/Shanghai
+      NAMESRV_ADDR: "rmqnamesrv-a:9876;rmqnamesrv-b:9876"
+      JAVA_OPTS: " -Duser.home=/home"
+      JAVA_OPT_EXT: "-Xms512M -Xmx512M -Xmn128m"
+    command: sh mqbroker -c /home/rocketmq/rocketmq-4.8.0/conf/broker.conf autoCreateTopicEnable=true &
+    depends_on:
+    - rmqnamesrv-a
+    - rmqnamesrv-b
+    - rmqbroker-a
+    links:
+    - rmqnamesrv-a:rmqnamesrv-a
+    - rmqnamesrv-b:rmqnamesrv-b
+    networks:
+      rmq:
+        aliases:
+        - rmqbroker-a-s
+
   rmqbroker-b:
     image: foxiswho/rocketmq:4.8.0
     container_name: rmqbroker-b
     ports:
-    - 10909:10909
+    - 10912:10912
     volumes:
     - ${PWD}/rocketmq/broker-b/logs:/home/rocketmq/logs
     - ${PWD}/rocketmq/broker-b/store:/home/rocketmq/store
+    - ${PWD}/rocketmq/broker-b/store/commitlog:/home/rocketmq/store/commitlog
+    - ${PWD}/rocketmq/broker-b/store/consumequeue:/home/rocketmq/store/consumequeue
     - ${PWD}/broker-b/conf/broker-b.conf:/home/rocketmq/rocketmq-4.8.0/conf/broker.conf
     environment:
       TZ: Asia/Shanghai
-      NAMESRV_ADDR: "rmqnamesrv-a:9876;rmqnamesrv-b:9877"
+      NAMESRV_ADDR: "rmqnamesrv-a:9876;rmqnamesrv-b:9876"
       JAVA_OPTS: " -Duser.home=/home"
       JAVA_OPT_EXT: "-Xms512M -Xmx512M -Xmn128m"
     command: sh mqbroker -c /home/rocketmq/rocketmq-4.8.0/conf/broker.conf autoCreateTopicEnable=true &
@@ -80,13 +113,42 @@ services:
         aliases:
         - rmqbroker-b
 
+  rmqbroker-b-s:
+    image: foxiswho/rocketmq:4.8.0
+    container_name: rmqbroker-b-slave
+    ports:
+    - 11912:11912
+    volumes:
+    - ${PWD}/rocketmq/broker-b-s/logs:/home/rocketmq/logs
+    - ${PWD}/rocketmq/broker-b-s/store:/home/rocketmq/store
+    - ${PWD}/rocketmq/broker-b-s/store/commitlog:/home/rocketmq/store/commitlog
+    - ${PWD}/rocketmq/broker-b-s/store/consumequeue:/home/rocketmq/store/consumequeue
+    - ${PWD}/broker-b-s/conf/broker-b-s.conf:/home/rocketmq/rocketmq-4.8.0/conf/broker.conf
+    environment:
+      TZ: Asia/Shanghai
+      NAMESRV_ADDR: "rmqnamesrv-a:9876;rmqnamesrv-b:9876"
+      JAVA_OPTS: " -Duser.home=/home"
+      JAVA_OPT_EXT: "-Xms512M -Xmx512M -Xmn128m"
+    command: sh mqbroker -c /home/rocketmq/rocketmq-4.8.0/conf/broker.conf autoCreateTopicEnable=true &
+    depends_on:
+    - rmqnamesrv-a
+    - rmqnamesrv-b
+    - rmqbroker-b
+    links:
+    - rmqnamesrv-a:rmqnamesrv-a
+    - rmqnamesrv-b:rmqnamesrv-b
+    networks:
+      rmq:
+        aliases:
+        - rmqbroker-b-s
+
   rmqconsole:
     image: styletang/rocketmq-console-ng
     container_name: rmqconsole
     ports:
     - 8180:8080
     environment:
-      JAVA_OPTS: -Drocketmq.namesrv.addr=rmqnamesrv-a:9876;rmqnamesrv-b:9877 -Dcom.rocketmq.sendMessageWithVIPChannel=false
+      JAVA_OPTS: -Drocketmq.namesrv.addr=rmqnamesrv-a:9876;rmqnamesrv-b:9876 -Dcom.rocketmq.sendMessageWithVIPChannel=false
     networks:
       rmq:
         aliases:

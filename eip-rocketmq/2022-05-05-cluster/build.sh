@@ -16,14 +16,31 @@ mkdir -p $(pwd)/rocketmq/broker-a/logs
 mkdir -p $(pwd)/rocketmq/broker-b/logs
 mkdir -p $(pwd)/rocketmq/broker-a/store
 mkdir -p $(pwd)/rocketmq/broker-b/store
+mkdir -p $(pwd)/rocketmq/broker-a-s/logs
+mkdir -p $(pwd)/rocketmq/broker-b-s/logs
+mkdir -p $(pwd)/rocketmq/broker-a-s/store
+mkdir -p $(pwd)/rocketmq/broker-b-s/store
+
+mkdir -p $(pwd)/rocketmq/broker-a/store/commitlog
+mkdir -p $(pwd)/rocketmq/broker-a/store/consumequeue
+mkdir -p $(pwd)/rocketmq/broker-a-s/store/commitlog
+mkdir -p $(pwd)/rocketmq/broker-a-s/store/consumequeue
+mkdir -p $(pwd)/rocketmq/broker-b/store/commitlog
+mkdir -p $(pwd)/rocketmq/broker-b/store/consumequeue
+mkdir -p $(pwd)/rocketmq/broker-b-s/store/commitlog
+mkdir -p $(pwd)/rocketmq/broker-b-s/store/consumequeue
 
 chmod 777 $(pwd)/rocketmq/*
 chmod 777 $(pwd)/rocketmq/broker-b/*
 chmod 777 $(pwd)/rocketmq/broker-a/*
+chmod 777 $(pwd)/rocketmq/broker-b-s/*
+chmod 777 $(pwd)/rocketmq/broker-a-s/*
 chmod 777 $(pwd)/rocketmq/nameserver-a/*
 chmod 777 $(pwd)/rocketmq/nameserver-b/*
 chmod 777 $(pwd)/broker-a
 chmod 777 $(pwd)/broker-b
+chmod 777 $(pwd)/broker-a-s
+chmod 777 $(pwd)/broker-b-s
 
 
 echo "docker-compose up"
