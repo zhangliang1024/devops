@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: rocketmq
+  namespace: single
+spec:
+  ports:
+  - port: 9876
+    protocol: TCP
+    targetPort: 9876
+  selector:
+    app: mqnamesrv
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mqnamesrv
+  namespace: single
+spec:
+  serviceName: mqnamesrv
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mqnamesrv
+  template:
+    metadata:
+      labels:
+        app: mqnamesrv
+    spec:
+      containers:
+      - name: mqnamesrv
+        image: foxiswho/rocketmq:4.8.0
+        command: ["sh","mqnamesrv"]
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 9876
+          protocol: TCP

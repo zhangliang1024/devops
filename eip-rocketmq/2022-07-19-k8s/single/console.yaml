@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: console
+  name: console
+  namespace: single
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: console
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: console
+    spec:
+      containers:
+      - image: styletang/rocketmq-console-ng
+        name: rocketmq-console-ng
+        env:
+        - name: JAVA_OPTS
+          value: "-Drocketmq.namesrv.addr=rocketmq:9876 -Dcom.rocketmq.sendMessageWithVIPChannel=false"
+        resources: {}
+status: {}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  labels:
+    app: console
+  name: console
+  namespace: single
+spec:
+  ports:
+  - port: 8080
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: console
+status:
+  loadBalancer: {}

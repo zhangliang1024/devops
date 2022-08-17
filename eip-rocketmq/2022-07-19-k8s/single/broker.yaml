@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mqbroker
+  namespace: single
+spec:
+  serviceName: mqbroker
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mqbroker
+  template:
+    metadata:
+      labels:
+        app: mqbroker
+    spec:
+      containers:
+      - name: mqbroker
+        image: foxiswho/rocketmq:4.8.0
+        command: ["sh","mqbroker", "-n","rocketmq:9876"]
+        imagePullPolicy: Always
+        env:
+        - name: JAVA_OPT_EXT
+          value: "-server -XX:ParallelGCThreads=1 -Xms512M -Xmx512M -Xmn128m"
+          #value: "-XX:MaxRAMPercentage=80.0"
+        ports:
+        - containerPort: 10909
+        - containerPort: 10911
+        resources:
+          requests:
+            memory: 128Mi
+          limits:
+            memory: 1024Mi

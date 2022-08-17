@@ -1,0 +1,19 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: rocketmq
+  namespace: single
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: bml.mq.com
+    http:
+      paths:
+      - path: /
+        backend:
+          service:
+            name: console
+            port:
+              number: 8080
+        pathType: Prefix
+
