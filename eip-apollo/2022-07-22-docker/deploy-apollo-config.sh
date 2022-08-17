@@ -15,6 +15,7 @@ docker stop apollo-configservice && docker rm apollo-configservice
 
 docker run -d --restart always \
      --name apollo-configservice \
+     #--network host \
      -p 8080:8080 \
      -e SPRING_DATASOURCE_URL="jdbc:mysql://172.16.2.72:3306/apolloconfigdb9085?characterEncoding=utf8" \
      -e SPRING_DATASOURCE_USERNAME=root \

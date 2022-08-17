@@ -5,6 +5,30 @@
 ## 一、`docker`搭建
 > 在线安装  [docker-install](https://docs.docker.com/engine/install/centos/)
 
+#### Centos8于2021年停止服务导致使用yum安装报错
+> `Failed to download metadata for repo ‘appstream‘: Cannot prepare internal mirrorlist`
+
+```bash
+# 1.进入yum源的repos目录
+cd /etc/yum.repos.d/
+
+# 2.修改所有的CentOS文件 
+sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-*
+
+sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*
+
+# 3.更新yum源为阿里镜像
+wget -O /etc/yum.repos.d/CentOS-Base.repo https://mirrors.aliyun.com/repo/Centos-vault-8.5.2111.repo
+
+yum clean all
+yum makecache
+
+# 4.yum安装wget测试
+yum install wget –y
+
+```
+
+
 ### 1. 配置`yum`源阿里云镜像
 ```properties
 1. 备份原来的yum源
