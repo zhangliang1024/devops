@@ -1,0 +1,67 @@
+---
+# apollo-admin-deploy.yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: apolloadmin
+  namespace: eip-base
+spec:
+  selector:
+    matchLabels:
+      app: apolloadmin
+  serviceName: apolloadmin-service
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: apolloadmin
+    spec:
+      restartPolicy: Always
+      containers:
+        - name: apolloadmin
+          image: 192.168.100.141:8888/library/apollo-adminservice:1.9.1
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8090
+              protocol: TCP
+          resources:
+            limits:
+              cpu: "500m"
+              memory: "1024Mi"
+            requests:
+              cpu: "300m"
+              memory: "512Mi"
+          env:
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:mysql://192.168.80.135:3306/apolloconfigdb?characterEncoding=utf8"
+            - name: SPRING_DATASOURCE_USERNAME
+              value: "apollo"
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: "!QAZxsw2"
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: EUREKA_INSTANCE_INSTANCE-ID
+              value: $(POD_IP):8090
+      imagePullSecrets:
+        - name: regcred
+      dnsPolicy: ClusterFirst
+
+---
+# apollo-admin-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: apolloadmin
+  namespace: eip-base
+  labels:
+    app: apolloadmin
+spec:
+  type: ClusterIP
+  ports:
+  - protocol: TCP
+    port: 8090
+    targetPort: 8090
+  selector:
+    app: apolloadmin

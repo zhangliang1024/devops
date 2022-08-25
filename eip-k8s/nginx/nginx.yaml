@@ -1,0 +1,71 @@
+---
+# nginx-ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  namespace: eip-base
+  name: nginx
+spec:
+  rules:
+  - host: eipbase.example.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: nginx
+            port:
+              number: 80
+
+---
+# nginx-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: eip-base
+  name: nginx
+  labels:
+    app: nginx
+spec:
+  selector:
+    app: nginx
+  type: NodePort
+  ports:
+    - name: default
+      port: 80
+      targetPort: 80
+      nodePort: 30080
+
+---
+# nginx-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: eip-base
+  name: nginx
+  labels:
+    app: nginx
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+        - name: nginx
+          image: 192.168.100.141:8888/library/nginx:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 80
+          resources:
+            limits:
+              cpu: "100m"
+              memory: "512Mi"
+      imagePullSecrets:
+      - name: regcred
+

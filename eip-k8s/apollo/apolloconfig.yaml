@@ -1,0 +1,68 @@
+---
+# apollo-config-deploy.yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: apolloconfig
+  namespace: eip-base
+spec:
+  selector:
+    matchLabels:
+      app: apolloconfig
+  serviceName: apolloconfig-service
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: apolloconfig
+    spec:
+      restartPolicy: Always
+      containers:
+        - name: apolloconfig
+          image: 192.168.100.141:8888/library/apollo-configservice:1.9.1
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          resources:
+            limits:
+              cpu: "500m"
+              memory: "1024Mi"
+            requests:
+              cpu: "300m"
+              memory: "512Mi"
+          env:
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:mysql://192.168.80.135:3306/apolloconfigdb?characterEncoding=utf8"
+            - name: SPRING_DATASOURCE_USERNAME
+              value: "apollo"
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: "!QAZxsw2"
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: EUREKA_INSTANCE_INSTANCE-ID # eureka注册中心显示IP
+              value: $(POD_IP):8080
+          imagePullSecrets:
+        - name: regcred
+      dnsPolicy: ClusterFirst
+
+---
+# apollo-config-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: apolloconfig
+  namespace: eip-base
+  labels:
+    app: apolloconfig
+spec:
+  type: NodePort
+  ports:
+  - protocol: TCP
+    port: 8080
+    targetPort: 8080
+    nodePort: 31080
+  selector:
+    app: apolloconfig

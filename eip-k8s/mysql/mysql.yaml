@@ -1,0 +1,123 @@
+---
+# mysql-service.yaml
+apiVersion: apps/v1
+kind: Service
+metadata:
+  name: mysql
+spec:
+  type: NodePort
+  ports:
+    - port: 3306
+      nodePort: 30306
+      targetPort: mysql
+  selector:
+    app: mysql
+
+---
+# mysql-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql
+spec:
+  selector:
+    app: mysql
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app:mysql
+    spec:
+      containers:
+        - image: mysql:5.7
+          name: mysql
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              value: 123456
+            - nmae: MYSQL_USER
+              value: root
+          ports:
+            - containerPort: 3306
+              name: mysql
+          volumeMounts:
+            - name: mysql-persistent-storage
+              mountPath: /var/lib/mysql
+            - name: mysql-config
+              mountPaht: /etc/mysql/conf.d/my.cnf
+              subPath: my.cnf
+      volumes:
+        - name: mysql-persistent-storage
+          emptyDir: {}
+  #        persistentVolumeClaim:
+  #          claimName: mysql-pvc
+        - name: mysql-config
+          configMap:
+            name: mysql-db-config
+            items:
+              - key: my.cnf
+                path: my.cnf
+
+---
+# mysql-config-map.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  namespace: eip-dev
+  name: msyql-db-config
+  labels:
+    app: mysql-db-config
+data:
+  my.cnf: |
+    [client]
+    default-character-set=utf8mb4
+
+    [mysql]
+    default-character-set=utf8mb4
+
+    [mysqld]
+    character-set-server=utf8mb4
+    collation-server=utf8mb4_unicode_ci
+    init_connect='SET NAMES utf8mb4'
+    skip-character-set-client-handshake=true
+    max_connections=2000
+    secure_file_priv=/var/lib/mysql
+    datadir=/var/lib/mysql
+    bind-address=0.0.0.0
+    symbolic-links=0
+
+
+---
+# mysql-pv.yaml
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mysql-pv
+  namespace: eip-base
+  labels:
+    type: local
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Recycle
+  hostPath:
+    path: "/opt/k8s-pv/data/mysql" # 设置PV在宿主机上的数据目录
+
+---
+# mysql-pvc.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql-pvc
+  namespace: eip-base
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  volumeName: mysql-pv  #要绑定的PV名称

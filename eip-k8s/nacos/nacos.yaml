@@ -1,0 +1,132 @@
+---
+# nacos-ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  namespace: eip-base
+  name: nacos-ingress
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    ingress.kubernetes.io/enable-access-log: "true"
+spec:
+  rules:
+    - host: eip.nacos.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: nacos-service
+                port:
+                  number: 8848
+---
+# nacos-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: eip-base
+  name: nacos-servcie
+spec:
+  type: NodePort
+  selector:
+    app: nacos
+  ports:
+    - portocol: TCP
+      targetPort: 8848
+      port: 8848
+      nodePort: 30848
+
+---
+# nacos-deploy.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: eip-base
+  name: nacos-deploy
+  labels:
+    app: nacos
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nacos
+  template:
+    metadata:
+      labels:
+        app: nacos
+    spec:
+      containers:
+        - name: nacos
+          image: nacos/nacos-server:2.0.4-slim
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8848
+            - name: http1
+              containerPort: 9848
+            - name: http2
+              containerPort: 9849
+          env:
+            - name: MODE
+              value: "standalone"
+          # 存活检查
+          livenessProbe:
+            httpGet:
+              path: /nacos/actuator/health
+              prot: http
+            initialDelaySeconds: 40
+            timeoutSecondes: 5
+            periodSecondes: 30
+          # 就绪检查
+          readinessProbe:
+            httpGet:
+              path: /nacos/actuator/health
+              port: http
+            initialDelaySeconds: 40
+            timeoutSeconds: 5
+            preiodSeconds: 5
+          volumeMounts:
+            - name: nacos-storage
+              mountPath: /home/nacos/data
+      volumes:
+        - name: nacos-storage
+          emptyDir: {} # emptyDir 类型数据卷存在节点的临时目录，POD奔溃、集群重启时不会丢数据。但是命令删除pod后数据卷也会删除
+#          persistentVolumeClaim: # 推荐用这种替代emptyDir类型数据卷，pv是独立在集群中存在的。这样主动删除Pod时，数据还在
+#            claimName: nacos-pvc
+#      imagePullSecrets: # 配置拉取镜像Secret
+#        - name: regcred
+---
+# nacos-pv.yaml
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  namespace: eip-base
+  name: nacos-pv
+  labels:
+    type: local
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 20Gi # 定义PV大小
+  accessModes:
+    - ReadWriteOnce # 读写模式：只能被单个节点读写
+  persistentVolumeReclaimPolicy: Recycle
+  hostPath:
+    path: "/opt/k8s-pv/data/nacos" # 设置PV在宿主机上的数据目录
+
+---
+# nacos-pvc.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  namespace: eip-base
+  name: nacos-pvc
+spec:
+  storageClassName: manul
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi #声明申领的存储大小
+  volumeName: nacos-pv  #要绑定的PV名称

@@ -1,0 +1,68 @@
+---
+# apollo-portal-deploy.yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  namespace: eip-base
+  name: apolloportal
+spec:
+  selector:
+    matchLabels:
+      app: apolloportal
+  serviceName: apolloportal-service
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: apolloportal
+    spec:
+      restartPolicy: Always
+      containers:
+        - name: apolloportal
+          image: 192.168.100.141:8888/library/apollo-portal:1.9.1
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8070
+              protocol: TCP
+          resources:
+            limits:
+              cpu: "500m"
+              memory: "1024Mi"
+            requests:
+              cpu: "300m"
+              memory: "512Mi"
+          env:
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:mysql://192.168.80.135:3306/apolloportaldb?characterEncoding=utf8"
+            - name: SPRING_DATASOURCE_USERNAME
+              value: "apollo"
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: "!QAZxsw2"
+            - name: APOLLO_PORTAL_ENVS
+              value: "hwuat"     ##多个环境则配置多个，用","隔开，类似添加多个META
+            - name: HWUAT_META
+              value: "http://apolloconfig:8080"
+      imagePullSecrets:
+        - name: regcred
+      dnsPolicy: ClusterFirst
+
+---
+# apollo-portal-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: eip-base
+  name: apolloportal
+  labels:
+    app: apolloportal
+spec:
+  selector:
+    app: apolloportal
+  type: NodePort
+  ports:
+    - name: http
+      protocol: TCP
+      port: 8070
+      targetPort: 8070
+      nodePort: 31070

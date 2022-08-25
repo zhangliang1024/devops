@@ -1,0 +1,80 @@
+---
+# apollo-mysql-deploy.yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  namespace: eip-base
+  name: mysql-apollo
+spec:
+  selector:
+    matchLabels:
+      app: mysql-apollo
+  serviceName: mysql-apollo-service
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: mysql-apollo
+    spec:
+      restartPolicy: Always
+      containers:
+        - name: mysql-apollo
+          image: 192.168.100.141:8888/library/mysql:5.7
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3306
+              protocol: TCP
+          resources:
+            limits:
+              cpu: "1000m"
+              memory: "2048Mi"
+            requests:
+              cpu: "500m"
+              memory: "1024Mi"
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              value: "qwer@1234"
+          volumeMounts:
+            - name: datadir
+              mountPath: /data/mysql-apollo
+      imagePullSecrets:
+        - name: regcred
+      dnsPolicy: ClusterFirst
+      hostNetwork: true
+      securityContext:
+        runAsUser: 1000
+        fsGroup: 1000
+      volumes:
+        - name: datadir
+          emptyDir: {}
+#  volumeClaimTemplates:
+#    - metadata:
+#        name: datadir
+#        namespace: eip-base
+#        annotations:
+#          everest.io/disk-volume-type: SSD
+#      spec:
+#        accessModes: [ "ReadWriteOnce" ]
+#        resources:
+#          requests:
+#            storage: 10Gi
+#        storageClassName: csi-disk
+
+---
+# apollo-mysql-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-apollo
+  namespace: eip-base
+  labels:
+    app: mysql-apollo
+spec:
+  selector:
+    app: mysql-apollo
+  type: NodePort
+  ports:
+  - protocol: TCP
+    port: 3306
+    targetPort: 3306
+    nodePort: 31306

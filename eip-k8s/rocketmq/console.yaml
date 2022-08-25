@@ -1,0 +1,71 @@
+---
+# console-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rocketmq-console
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rocketmq-console
+      name: rocketmq-console
+    template:
+      metadata:
+        labels:
+          app: rocketmq-console
+          name: rocketmq-console
+      spec:
+        containers:
+          - name: rocketmq-console
+            image: aidansu/rocketmq-console:1.0.1
+            imagePullPolicy: IfNotPresent
+            ports:
+              - name: rocketmq-console
+                containerPort: 8080
+            env:
+              - name: TZ
+                value: Asia/Shanghai
+              - name: JAVA_OPTS
+                value: -Drocketmq.config.namesrvAddr=rocketmq:9876 -Dcom.rocketmq.sendMessageWithVIPChannel=false #-Drocketmq.config.loginRequired=true,是否开启验证登录
+            volumeMounts:
+              - name: rocketmq-console-config
+                mountPath: "/tmp/rocketmq-console/data/user.properties"
+                subPath: user.properties
+        volumes:
+          - name: rocketmq-console-config
+            configMap:
+              name: rocketmq-console-config
+
+
+---
+# console-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: rocketmq-console
+  labels:
+    app: rocketmq-console
+spec:
+  slector:
+    app: rocketmq-console
+  type: NodePort
+  prots:
+    - name: console
+      port: 8080
+      targetPort: 8080
+      nodePort: 30875
+
+
+---
+# console-config-map.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rocketmq-console-config
+data:
+  users.properties: |
+    rocketmq=rocketmq,1
+
+
+

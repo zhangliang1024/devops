@@ -1,0 +1,73 @@
+---
+# mongo-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: eip-base
+  name: mongo-servcie
+spec:
+  type: NodePort
+  selector:
+    app: mongo
+  ports:
+    - portocol: TCP
+      port: 27017
+      targetPort: 27017
+      nodePort: 30017
+
+---
+# mongo-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: eip-base
+  name: mongo-deploy
+  labels:
+    app: mongo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongo
+  template:
+    metadata:
+      labels:
+        app: mongo
+    spec:
+      containers:
+        - name: mongodb
+          image: mongo:latest
+          prots:
+            - containerPort: 27017
+          env:
+            - name: MONGO_INITDB_ROOT_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: mongo-secret
+                  key: mongo-root-username
+            - name: MONGO_INITDB_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mongo-secret
+                  key: mongo-root-password
+
+          volumeMounts:
+            - name: mongo-storage
+              mountPaht: /data/db
+      volumes:
+        - name: mongo-storage
+          emptyDir: {}
+
+---
+# mongo-secret.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  namespace: eip-base
+  name: mongo-secret
+type: Opaque
+data:
+  # echo -n 'username' | base64
+  mongo-root-username: mongo
+  # echo -n 'password' | base64
+  mongo-root-password: mongo

@@ -1,0 +1,71 @@
+---
+# rocketmq-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: eip-base
+  labels:
+    app: rocketmq
+spec:
+  selector:
+    app: rocketmq
+  type: NodePort
+  ports:
+    - port: 9876
+      targetPort: 9876
+      nodePort: 30876
+      name: rocketmq
+
+---
+# rocketmq-deployment-namesrv.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rocketmq-namsrv
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rocketmq-namsrv
+      name: rocketmq-namsrv
+  template:
+    metadata:
+      labels:
+        app: rocketmq-namsrv
+        name: rocketmq-namsrv
+    spec:
+      containers:
+        - name: rocketmq-namsrv
+          image: apacherocketmq/rocketmq:6.7.2
+          imagePullPolicy: IfNotPresent
+          command: ["sh","mqnamesrv"]
+          ports:
+            - containerPort: 9876
+
+---
+# rocketmq-deployment-broker.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rocketmq-broker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rocketmq-broker
+      name: rocketmq-broker
+  template:
+    metadata:
+      labels:
+        app: rocketmq-broker
+        name: rocketmq-broker
+    spec:
+      containers:
+        - name: rocketmq-broker
+          image: apacherocketmq/rocketmq:6.7.7
+          imagePullPolicy: IfNotPresent
+          command: ["sh","mqbroker","-n","rocketmq:9876"]
+          ports:
+            - containerPort: 10909
+            - containerPort: 10911
+
