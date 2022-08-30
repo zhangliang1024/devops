@@ -1,0 +1,18 @@
+version: '3'
+
+services:
+  kafka-offset-monitor:
+    image: kafka-offset-monitor:1.0.0
+    volumes:
+      - ${PWD}/logs/:/u01/app/kafka-offset-monitor/logs/
+    ports:
+      - 8086:8086
+    environment:
+      ZK_HOSTS: 192.168.1.193:2181
+      KAFKA_BROKERS: 192.168.1.193:9092
+      REFRESH_SECENDS: 10
+      RETAIN_DAYS: 2
+
+
+
+

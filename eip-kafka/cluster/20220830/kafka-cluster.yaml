@@ -1,0 +1,153 @@
+version: '3.1'
+
+services:
+  #zk集群
+  zk1:
+    image: zookeeper:3.7.0
+    restart: always
+    container_name: elk-cluster-zk1
+    hostname: zk1
+    ports:
+    - 2181:2181
+    volumes:
+    - "/elk/zookeeper/zk1/data:/data"
+    - "/elk/zookeeper/zk1/logs:/datalog"
+    environment:
+      ZOO_MY_ID: 1
+      ZOO_SERVERS: server.1=0.0.0.0:2888:3888;2181 server.2=zk2:2888:3888;2181 server.3=zk3:2888:3888;2181
+  zk2:
+    image: zookeeper:3.7.0
+    restart: always
+    container_name: elk-cluster-zk2
+    hostname: zk2
+    ports:
+    - 2182:2181
+    volumes:
+    - "/elk/zookeeper/zk2/data:/data"
+    - "/elk/zookeeper/zk2/logs:/datalog"
+    environment:
+      ZOO_MY_ID: 2
+      ZOO_SERVERS: server.1=zk1:2888:3888;2181 server.2=0.0.0.0:2888:3888;2181 server.3=zk3:2888:3888;2181
+  zk3:
+    image: zookeeper:3.7.0
+    restart: always
+    container_name: elk-cluster-zk3
+    hostname: zk3
+    ports:
+    - 2183:2181
+    volumes:
+    - "/elk/zookeeper/zk3/data:/data"
+    - "/elk/zookeeper/zk3/logs:/datalog"
+    environment:
+      ZOO_MY_ID: 3
+      ZOO_SERVERS: server.1=zk1:2888:3888;2181 server.2=zk2:2888:3888;2181 server.3=0.0.0.0:2888:3888;2181
+
+
+  #kafka集群
+  kafka1:
+    image: wurstmeister/kafka:2.13-2.7.0
+    restart: always
+    container_name: elk-cluster-kafka1
+    hostname: kafka1
+    ports:
+    - "9091:9092"
+    - "9991:9991"
+    depends_on:
+    - zk1
+    - zk2
+    - zk3
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ADVERTISED_HOST_NAME: kafka1
+      KAFKA_ADVERTISED_PORT: 9091
+      KAFKA_HOST_NAME: kafka1
+      KAFKA_ZOOKEEPER_CONNECT: zk1:2181,zk2:2181,zk3:2181
+      KAFKA_LISTENERS: PLAINTEXT://kafka1:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://192.168.23.134:9091
+      JMX_PORT: 9991
+      KAFKA_JMX_OPTS: "-Djava.rmi.server.hostname=kafka1 -Dcom.sun.management.jmxremote.port=9991 -Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.managementote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false"
+    volumes:
+    - "/elk/kafka/kafka1/:/kafka"
+  kafka2:
+    image: wurstmeister/kafka:2.13-2.7.0
+    restart: always
+    container_name: elk-cluster-kafka2
+    hostname: kafka2
+    ports:
+    - "9092:9092"
+    - "9992:9992"
+    depends_on:
+    - zk1
+    - zk2
+    - zk3
+    environment:
+      KAFKA_BROKER_ID: 2
+      KAFKA_ADVERTISED_HOST_NAME: kafka2
+      KAFKA_ADVERTISED_PORT: 9092
+      KAFKA_HOST_NAME: kafka2
+      KAFKA_ZOOKEEPER_CONNECT: zk1:2181,zk2:2181,zk3:2181
+      KAFKA_LISTENERS: PLAINTEXT://kafka2:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://192.168.23.134:9092
+      JMX_PORT: 9992
+      KAFKA_JMX_OPTS: "-Djava.rmi.server.hostname=kafka2 -Dcom.sun.management.jmxremote.port=9992 -Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.managementote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false"
+    volumes:
+    - "/elk/kafka/kafka2/:/kafka"
+  kafka3:
+    image: wurstmeister/kafka:2.13-2.7.0
+    restart: always
+    container_name: elk-cluster-kafka3
+    hostname: kafka3
+    ports:
+    - "9093:9092"
+    - "9993:9993"
+    depends_on:
+    - zk1
+    - zk2
+    - zk3
+    environment:
+      KAFKA_BROKER_ID: 3
+      KAFKA_ADVERTISED_HOST_NAME: kafka3
+      KAFKA_ADVERTISED_PORT: 9093
+      KAFKA_HOST_NAME: kafka3
+      KAFKA_ZOOKEEPER_CONNECT: zk1:2181,zk2:2181,zk3:2181
+      KAFKA_LISTENERS: PLAINTEXT://kafka3:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://192.168.23.134:9093
+      JMX_PORT: 9993
+      KAFKA_JMX_OPTS: "-Djava.rmi.server.hostname=kafka3 -Dcom.sun.management.jmxremote.port=9993 -Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.managementote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false"
+    volumes:
+    - "/elk/kafka/kafka3/:/kafka"
+
+
+  #kafka管理工具
+  'kafka-manager':
+    container_name: kafka-manager
+    image: sheepkiller/kafka-manager:stable
+    restart: always
+    ports:
+    - 9000:9000
+    depends_on:
+    - kafka1
+    - kafka2
+    - kafka3
+    environment:
+      KM_VERSION: 1.3.3.18
+      ZK_HOSTS: zk1:2181,zk2:2181,zk3:2181
+
+  #kafka监控工具
+  'kafka-offset-monitor':
+    container_name: kafka-offset-monitor
+    image: 564239555/kafkaoffsetmonitor:latest
+    restart: always
+    volumes:
+    - /elk/kafkaoffsetmonitor/conf:/kafkaoffsetmonitor
+    ports:
+    - 9001:8080
+    depends_on:
+    - kafka1
+    - kafka2
+    - kafka3
+    environment:
+      ZK_HOSTS: zk1:2181,zk2:2181,zk3:2181
+      KAFKA_BROKERS: kafka1:9092,kafka2:9092,kafka3:9092
+      REFRESH_SECENDS: 10
+      RETAIN_DAYS: 2
