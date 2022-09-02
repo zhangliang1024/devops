@@ -7,5 +7,7 @@ docker run -d \
         --restart=always \
         -p 5432:5432 \
         -e POSTGRES_PASSWORD=123456 \
-        -v /home/postgres/data:/var/lib/postgresql/data \
+        -v ${PWD}/postgres/data:/var/lib/postgresql/data \
         postgres:14.2
+
+docker logs -f postgres

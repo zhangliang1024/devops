@@ -1,0 +1,62 @@
+version: "3"
+networks:
+  monitor:
+    driver: bridge
+
+services:
+  elasticsearch:
+    image: elasticsearch:7.14.0
+    container_name: elasticsearch
+    hostname: elasticsearch
+    privileged: true
+    restart: always
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - "/home/elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml"
+      - "/home/elasticsearch/data:/usr/share/elasticsearch/data"
+      - "/home/elasticsearch/logs:/usr/share/elasticsearch/logs"
+    environment:
+      - "discovery.type=single-node"
+      - "ES_JAVA_OPTS=-Xms512m -Xmx1024m"
+    networks:
+      - monitor
+
+  oap:
+    image: apache/skywalking-oap-server:8.7.0-es7
+    container_name: oap
+    hostname: oap
+    restart: always
+    ports:
+      - "11800:11800"
+      - "12800:12800"
+    environment:
+      - TZ=Asia/Shanghai
+      - SW_STORAGE=elasticsearch7
+      - SW_STORAGE_ES_CLUSTER_NODES=elasticsearch:9200
+    networks:
+      - monitor
+    links:
+      - elasticsearch
+    depends_on:
+      - elasticsearch
+
+  oap-ui:
+    image: apache/skywalking-ui:8.7.0
+    container_name: oap-ui
+    hostname: oap-ui
+    restart: always
+    privileged: true
+    ports:
+      - "8090:8080"
+    environment:
+      - TZ=Asia/Shanghai
+      - SW_OAP_ADDRESS=http://oap:12800
+    networks:
+      - monitor
+    depends_on:
+      - elasticsearch
+      - oap
+    links:
+      - oap

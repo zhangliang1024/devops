@@ -1,0 +1,40 @@
+version: '3'
+
+services:
+  zookeeper:
+    image: wurstmeister/zookeeper
+    container_name: zookeeper
+    volumes:
+    - "/etc/localtime:/etc/localtime"
+    ports:
+    - "2181:2181"
+
+  kafka:
+    image: wurstmeister/kafka
+    container_name: kafak
+    volumes:
+    - "/etc/localtime:/etc/localtime"
+    environment:
+      KAFKA_BROKER_ID: 0
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://182.42.116.xx:9092
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_CREATE_TOPICS: "hello_world"
+    ports:
+    - "9092:9092"
+    depends_on:
+    - zookeeper
+
+  kafka-manager:
+    image: sheepkiller/kafka-manager
+    container_name: kafka-manager
+    environment:
+      ZK_HOSTS: zookeeper:2181
+      APPLICATION_SECRET: xxxxx
+      KAFKA_MANAGER_AUTH_ENABLED: "true"
+      KAFKA_MANAGER_USERNAME: admin
+      KAFKA_MANAGER_PASSWORD: 123456
+    ports:
+    - "9000:9000"
+    depends_on:
+    - kafka

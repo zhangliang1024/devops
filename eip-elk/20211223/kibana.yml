@@ -3,3 +3,6 @@ server.shutdownTimeout: "5s"
 elasticsearch.hosts: [ "http://elasticsearch:9200" ]
 monitoring.ui.container.elasticsearch.enabled: true
 i18n.locale: "zh-CN"
+
+#elasticsearch.username: "elastic"
+#elasticsearch.password: "123456"

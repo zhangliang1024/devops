@@ -1,0 +1,175 @@
+# Docker-Compose部署Kakfa
+> `kafka3.0`版本之后，移除了`Zookeeper`。使用`Kraft机制`来实现`Controller`主控制器的选举。
+
+
+### 一、基于`zk`选举部署
+- 使用`zk`做选举
+> `docker-compose.yaml` 集成`zk`集群、`kafka`集群
+```yaml
+version: "3"
+
+services:
+  zk1:
+    image: zookeeper
+    restart: always
+    container_name: cs-zk1
+    hostname: zk1
+    privileged: true
+    ports:
+      - 2181:2181
+    volumes:
+      - ${PWD}/zookeeper/zk1/data:/data
+      - ${PWD}/zookeeper/zk1/logs:/datalog
+      - /etc/localtime:/etc/localtime
+    environment:
+      ZOO_MY_ID: 1
+      ZOO_SERVERS: server.1=zk1:2888:3888;2181 server.2=zk2:2888:3888;2181 server.3=zk3:2888:3888;2181
+  zk2:
+    image: zookeeper
+    restart: always
+    container_name: cs-zk2
+    hostname: zk2
+    privileged: true
+    ports:
+      - 2182:2181
+    volumes:
+      - ${PWD}/zookeeper/zk2/data:/data
+      - ${PWD}/zookeeper/zk2/logs:/datalog
+    environment:
+      ZOO_MY_ID: 2
+      ZOO_SERVERS: server.1=zk1:2888:3888;2181 server.2=zk2:2888:3888;2181 server.3=zk3:2888:3888;2181
+  zk3:
+    image: zookeeper
+    restart: always
+    container_name: cs-zk3
+    hostname: zk3
+    privileged: true
+    ports:
+      - 2183:2181
+    volumes:
+      - ${PWD}/zookeeper/zk3/data:/data
+      - ${PWD}/zookeeper/zk3/logs:/datalog
+    environment:
+      ZOO_MY_ID: 3
+      ZOO_SERVERS: server.1=zk1:2888:3888;2181 server.2=zk2:2888:3888;2181 server.3=zk3:2888:3888;2181
+
+  #kafka集群
+  kafka1:
+    image: wurstmeister/kafka:2.13-2.8.1
+    restart: always
+    container_name: cs-kafka1
+    hostname: kafka1
+    ports:
+      - 9091:9091
+      - 9991:9991
+    depends_on:
+      - zk1
+      - zk2
+      - zk3
+    environment:
+      KAFKA_BROKER_ID: 1 #指定brokerId
+      KAFKA_ADVERTISED_HOST_NAME: kafka1 #广播主机名，一般用IP指定
+      KAFKA_ZOOKEEPER_CONNECT: zk1:2181,zk2:2181,zk3:2181 #zk连接地址，格式：zk1:port1,zk1:port2
+      KAFKA_LISTENERS: PLAINTEXT://kafka1:9091 #kafka启动所使用的协议及端口
+      #若不配置，则宿主机以外的客户端将无法连接到kafka。这里因为容器与宿主机做了端口映射，所以广播地址采用的是宿主机的地址及端口，告诉客户端只要连接到宿主机的指定端口就行
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://192.168.1.193:9091 #kafka广播地址及端口。也就是告诉客户端，使用什么地址和端口能连接到Kafka
+      JMX_PORT: 9991
+      KAFKA_JMX_OPTS: "-Djava.rmi.server.hostname=kafka1 -Dcom.sun.management.jmxremote.port=9991 -Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.managementote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false"
+    volumes:
+      - ${PWD}/kafka/kafka1:/kafka
+  kafka2:
+    image: wurstmeister/kafka:2.13-2.8.1
+    restart: always
+    container_name: cs-kafka2
+    hostname: kafka2
+    ports:
+      - 9092:9092
+      - 9992:9992
+    depends_on:
+      - zk1
+      - zk2
+      - zk3
+    environment:
+      KAFKA_BROKER_ID: 2
+      KAFKA_ADVERTISED_HOST_NAME: kafka2
+      KAFKA_ZOOKEEPER_CONNECT: zk1:2181,zk2:2181,zk3:2181
+      KAFKA_LISTENERS: PLAINTEXT://kafka2:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://192.168.1.193:9092
+      JMX_PORT: 9992
+      KAFKA_JMX_OPTS: "-Djava.rmi.server.hostname=kafka2 -Dcom.sun.management.jmxremote.port=9992 -Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.managementote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false"
+    volumes:
+      - ${PWD}/kafka/kafka2:/kafka
+  kafka3:
+    image: wurstmeister/kafka:2.13-2.8.1
+    restart: always
+    container_name: cs-kafka3
+    hostname: kafka3
+    ports:
+      - 9093:9093
+      - 9993:9993
+    depends_on:
+      - zk1
+      - zk2
+      - zk3
+    environment:
+      KAFKA_BROKER_ID: 3
+      KAFKA_ADVERTISED_HOST_NAME: kafka3
+      KAFKA_ZOOKEEPER_CONNECT: zk1:2181,zk2:2181,zk3:2181
+      KAFKA_LISTENERS: PLAINTEXT://kafka3:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://192.168.1.193:9093
+      JMX_PORT: 9993
+      KAFKA_JMX_OPTS: "-Djava.rmi.server.hostname=kafka3 -Dcom.sun.management.jmxremote.port=9993 -Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.managementote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false"
+    volumes:
+      - ${PWD}/kafka/kafka3:/kafka
+
+
+  #kafka管理工具
+  kafka-manager:
+    container_name: kafka-manager
+    image: sheepkiller/kafka-manager:latest
+    restart: always
+    ports:
+      - 9000:9000
+    depends_on:
+      - kafka1
+      - kafka2
+      - kafka3
+    environment:
+      KM_VERSION: 1.3.3.18
+      ZK_HOSTS: zk1:2181,zk2:2181,zk3:2181
+
+  #kafka监控工具
+  kafka-offset-monitor:
+    container_name: kafka-offset-monitor
+    image: junxy/kafkaoffsetmonitor:latest
+    restart: always
+    volumes:
+      - ${PWD}/kafkaoffsetmonitor/data:/kafkaoffsetmonitor/data
+    ports:
+      - 9001:8080
+    depends_on:
+      - kafka1
+      - kafka2
+      - kafka3
+    environment:
+      ZK_HOSTS: zk1:2181,zk2:2181,zk3:2181
+      KAFKA_BROKERS: kafka1:9092,kafka2:9092,kafka3:9092
+      REFRESH_SECENDS: 10
+      RETAIN_DAYS: 2
+```
+
+> 查看`kafka`版本
+```bash
+[root@r9us45kbhkhg7v58 clsuter]# docker exec -it cs-kafka1 /bin/bash
+bash-5.1# find / -name *kafka_* | head -1 | grep -o '\kafka[^\n]*'
+kafka_2.13-2.8.1
+bash-5.1#
+```
+> `kafka_2.13-2.8.1` : 前面为`scala`的版本，后面为`kafka`版本。
+
+### 二、基于`Kraft`选举部署
+> 待编写
+
+```yaml
+
+```
