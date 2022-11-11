@@ -1,4 +1,5 @@
 # Docker安装`harbor`
+> `Harbor`是一个用于存储和分发`Docker`镜像的企业级`Registry`服务器。
 
 ### 一、资源准备
 > 安装`docker`\`docker-compose` harbor使用`docker-compse`维护
@@ -11,7 +12,7 @@
 #### 1.安装包[下载](https://github.com/goharbor/harbor/releases)
 ```bash
 [root@zhangl local]# wget https://github.com/goharbor/harbor/releases/download/v2.3.2/harbor-online-installer-v2.3.2.tgz
-[root@zhangl local]# tar -zxvf harbor-online-installer-v2.3.2.tgz -C /usr/local/harbor
+[root@zhangl local]# tar -zxvf harbor-online-installer-v2.3.2.tgz -C /usr/local
 [root@zhangl local]# cd /usr/local/harbor
 [root@zhangl harbor]# cp harbor.yml harbor.yml.bak
 ```
@@ -19,6 +20,9 @@
 >  vim harbor.yml
 ```yml
 hostname: xxx.61.41.102
+http:
+  port: 9090
+# 如无证书可不配置以下，注释掉  
 https:
   port: 443
   certificate: /usr/local/harbor/cert/xxx.61.41.102.crt
@@ -111,8 +115,27 @@ systemctl restart docker
 [root@zhangl harbor]# ./install.sh
 ```
 
+- 启动报错
+> `failed to initialize logging driver: dial tcp 127.0.0.1:1514: connect: connection refused`
+- 解决方案
+> `vim /etc/rsyslog.conf`
+```conf
+# 取消注释并修改
+module(load="imtcp")
+input(type="imtcp" port="1514")
+```
+> 重启`rsyslog`
+```bash
+systemctl restart rsyslog.service
+```
+
 ### 四、验证
 > - http://xxx.61.41.102
+```text
+用户: admin
+密码；Harbor12345
+```
+
 > - 服务器登录验证 
 ```bash
 [root@zhangl harbor]# docker login https://xxx.61.41.102 -u admin
@@ -153,7 +176,50 @@ systemctl restart docker
 > Error response from daemon: Get https://192.168.102.95/v2/: dial tcp 192.168.102.95:443: connect: co
 * [](https://blog.csdn.net/h111121111111/article/details/113994476)
 
-### 六、参考文档
+### 七、重置`Harbor`密码
+> `Harbor现在是使用`postgresql`数据库
+- 执行步骤
+> 进入容器
+```bash
+docker exce -it harbor-db /bin/bash
+```
+> 进入`postgresql`命令行
+```bash
+psql -U postgres -d postgres -h 127.0.0.1 -p 5432
+```
+> 切换到`harbor`所在数据库
+```bash
+\c registry
+```
+> 查看`harbor_user`表
+```bash
+select * from harbor_user;
+```
+> 修改admin的密码
+```bash
+update harbor_user set password='a71a7d0df981a61cbb53a97ed8d78f3e', salt='ah3fdh5b7yxepalg9z45bu8zb36sszmr' where username='admin';
+```
+> 退出
+```bash
+\q 或 exit
+```
+> 修改admin账户的名称
+```bash
+update harbor_user set username='Zhsan' where user_id=1; 
+```
+> 重置admin密码
+```bash
+# 重置后，需重新启动镜像仓库
+update harbor_user set salt='', password='' where username='admin'; 
+```
+
+- 查看`Harbor`设置的密码
+```bash
+docker exec -it harbor-core bash
+printenv | grep PASSWORD 
+```
+
+### 九、参考文档
 * ★★★ [Docker镜像仓库Harbor搭建](https://www.cnblogs.com/chinda/p/12776675.html)
 * ★★ [企业级Docker Registry Harbor搭建和使用](https://www.cnblogs.com/zhaojiankai/p/7822135.html)
 

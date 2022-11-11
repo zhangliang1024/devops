@@ -11,3 +11,6 @@
 * [docker-compose安装部署nacos](https://www.jianshu.com/p/f92cf8949061)
 * [docker-compose文件中networks使用已经创建的网络](https://blog.csdn.net/henni_719/article/details/89376111)
 * [Nacos 获取配置时启用权限认证](https://www.liujiajia.me/2021/7/28/nacos-enable-auth)
+
+
+* [Docker 简单部署 Nacos 超详细图文步骤](https://blog.csdn.net/u011374856/article/details/109204466)

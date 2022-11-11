@@ -10,7 +10,7 @@
 
 ### 二、部署`nexus`
 #### 1.启动脚本
-> restart.sh
+> `build.sh`
 > - `--privileged=true` 授予root权限（挂载多级目录必须为true，否则容器访问宿主机权限不足）
 ```bash
 #!/bin/bash
@@ -56,6 +56,10 @@ bash-4.4$
 ### 三、访问
 > http://xxx.42.116.245:8081/
 > - 注意开放端口
+```text
+账号：admin
+密码：cb849330-c74a-4d8c-ab4a-d67daaa5a927
+```
 
 ### 四、添加阿里云`maven`代理
 ```properties

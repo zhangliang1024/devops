@@ -28,6 +28,8 @@
 > - GITLAB_ROOT_PASSWORD : 密码必须大于8位
 > - 注意端口占用情况
 > - 这里使用非标准端口脚本
+
+- `build.sh`
 ```bash
 #!/bin/sh
   
@@ -35,16 +37,19 @@ docker stop gitlab && docker rm gitlab
 
 GITLAB_HOME=/usr/local/gitlab
 
-sudo docker run --detach \
-    --hostname 182.42.116.xxx \
-    --publish 8443:443 --publish 9090:9090 --publish 10080:22 \
-    --name gitlab \
+docker run -d --name gitlab \
+    --hostname 140.xx.154.99 \
+    -p 8443:443 \
+    -p 9091:80 \
+    -p 10080:22 \
     --restart always \
-    --volume $GITLAB_HOME/config:/etc/gitlab \
-    --volume $GITLAB_HOME/logs:/var/log/gitlab \
-    --volume $GITLAB_HOME/data:/var/opt/gitlab \
+    --privileged=true \
+    -v $GITLAB_HOME/config:/etc/gitlab \
+    -v $GITLAB_HOME/logs:/var/log/gitlab \
+    -v $GITLAB_HOME/data:/var/opt/gitlab \
     -e GITLAB_ROOT_PASSWORD=12345678 \
     gitlab/gitlab-ce:latest
+
 ```
 > 参数说明
 ```properties
@@ -69,7 +74,7 @@ e3b38561ddd3   gitlab/gitlab-ce:latest   "/assets/wrapper"        3 hours ago   
 > - 用户名密码：root/12345678
 
 ### 四、修改配置
-> vim config/gitlab.rd
+> vim config/gitlab.rb
 #### 1.使用非标准端口
 ```bash
 # 配置外部访问地址

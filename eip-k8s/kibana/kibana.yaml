@@ -1,0 +1,106 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: kibana
+  namespace: eip-base
+  labels:
+    app: kibana
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kibana
+  template:
+    metadata:
+      labels:
+        app: kibana
+    spec:
+      volumes:
+      - name: host-time
+        hostPath:
+          path: /etc/localtime
+          type: ''
+      - name: volume-583090
+        configMap:
+          name: kibana-config
+          defaultMode: 420
+      containers:
+      - name: kibana
+        image: '192.168.100.86/library/kibana:7.6.2'
+        ports:
+        - name: tcp-5601
+          containerPort: 5601
+          protocol: TCP
+        env:
+        - name: ELASTICSEARCH_HOSTS
+          value: 'http://elasticsearch.eip-base:9200'
+        resources:
+          limits:
+            cpu: '1'
+            memory: 1000Mi
+        volumeMounts:
+        - name: host-time
+          readOnly: true
+          mountPath: /etc/localtime
+        - name: volume-583090
+          readOnly: true
+          mountPath: /usr/share/kibana/config/kibana.yml
+          subPath: kibana.yml
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        imagePullPolicy: IfNotPresent
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      dnsPolicy: ClusterFirst
+      serviceAccountName: default
+      serviceAccount: default
+      securityContext: {}
+      imagePullSecrets:
+      - name: regcred
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 25%
+      maxSurge: 25%
+  revisionHistoryLimit: 10
+  progressDeadlineSeconds: 600
+
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: kibana
+  namespace: eip-base
+  labels:
+    app: kibana
+    version: v1
+spec:
+  ports:
+    - name: tcp-5601
+      protocol: TCP
+      port: 5601
+      targetPort: 5601
+      nodePort: 31256
+  selector:
+    app: kibana
+  type: NodePort
+
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: kibana-config
+  namespace: eip-base
+data:
+  kibana.yml: |-
+    #
+    # ** THIS IS AN AUTO-GENERATED FILE **
+    #
+
+    # Default Kibana configuration for docker target
+    server.name: kibana
+    server.host: "0"
+    elasticsearch.hosts: [ "http://elasticsearch:9200" ]
+    xpack.monitoring.ui.container.elasticsearch.enabled: true
+    i18n.locale: "zh-CN"
