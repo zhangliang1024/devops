@@ -32,16 +32,16 @@
 - `build.sh`
 ```bash
 #!/bin/sh
-  
+
 docker stop gitlab && docker rm gitlab
 
 GITLAB_HOME=/usr/local/gitlab
 
 docker run -d --name gitlab \
-    --hostname 140.xx.154.99 \
-    -p 8443:443 \
-    -p 9091:80 \
-    -p 10080:22 \
+    --hostname 140.246.xxx.99 \
+    -p 3003:443 \
+    -p 3080:3080 \
+    -p 3002:22 \
     --restart always \
     --privileged=true \
     -v $GITLAB_HOME/config:/etc/gitlab \
@@ -49,7 +49,7 @@ docker run -d --name gitlab \
     -v $GITLAB_HOME/data:/var/opt/gitlab \
     -e GITLAB_ROOT_PASSWORD=12345678 \
     gitlab/gitlab-ce:latest
-
+    
 ```
 > 参数说明
 ```properties
@@ -70,30 +70,32 @@ e3b38561ddd3   gitlab/gitlab-ce:latest   "/assets/wrapper"        3 hours ago   
 
 ### 三、访问
 > - 云服务器安全组开放端口
-> http://111.xxx.xxx.87:9091
+> http://111.xxx.xxx.87:3080
 > - 用户名密码：root/12345678
 
 ### 四、修改配置
 > vim config/gitlab.rb
-#### 1.使用非标准端口
+#### 1.配置外部访问地址
 ```bash
 # 配置外部访问地址
-external_url 'http://182.42.116.xxx:9090'
-nginx['redirect_http_to_https_port'] = 9090
-nginx['listen_port'] = 9090
+external_url 'http://182.42.116.xxx:3080'
+nginx['redirect_http_to_https_port'] = 3080
+nginx['listen_port'] = 3080
 
 gitlab_rails['gitlab_ssh_host'] = '182.42.116.xxx'
 # 此端口是run时22端口映射的2222端口
-gitlab_rails['gitlab_shell_ssh_port'] = 10080
+gitlab_rails['gitlab_shell_ssh_port'] = 3002
 ```
 #### 2.使用默认配置
+> ** 这里使用如下配置，做了下载的端口配置 **
 ```bash
 #配置http协议所使用的访问地址,不加端口号默认为80
-external_url 'http://182.42.116.xxx'
+external_url 'http://182.42.116.xxx:3080'
+nginx['listen_port'] = 3080
 # 配置ssh协议所使用的访问地址和端口
 gitlab_rails['gitlab_ssh_host'] = '182.42.116.xxx'
 # 此端口是run时22端口映射的2222端口
-gitlab_rails['gitlab_shell_ssh_port'] = 10080
+gitlab_rails['gitlab_shell_ssh_port'] = 3002
 ```
 
 > 重新加载配置
@@ -101,6 +103,23 @@ gitlab_rails['gitlab_shell_ssh_port'] = 10080
 [root@cm3gy24x0wravmtj gitlab]# docker exec gitlab gitlab-ctl reconfigure
 [root@cm3gy24x0wravmtj gitlab]# docker exec gitlab gitlab-ctl restart
 ```
+
+#### 3. 查看配置
+```bash
+# gitlab映射到宿主机的配置
+vim config/gitlab.rb
+# 执行gitlab-ctl reconfigure后，配置会刷新到这里
+vim data/nginx/conf/gitlab-http.conf
+
+# 进入gitlab容器，查看配置
+docker exec -it gitlab /bin/bash
+vi /opt/gitlab/embedded/service/gitlab-rails/config/gitlab.yml
+```
+
+#### 4. 仓库下载地址
+> 下载地址带了配置的端口
+
+<img src="http://tva1.sinaimg.cn/large/d1b93a20ly1h84vulkxm9j20qq0ef0vz.jpg"/>
 
 
 

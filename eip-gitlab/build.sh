@@ -5,10 +5,10 @@ docker stop gitlab && docker rm gitlab
 GITLAB_HOME=/usr/local/gitlab
 
 docker run -d --name gitlab \
-    --hostname 140.xx.154.99 \
-    -p 8443:443 \
-    -p 9091:80 \
-    -p 10080:22 \
+    --hostname 140.246.xxx.99 \
+    -p 3003:443 \
+    -p 3080:3080 \
+    -p 3002:22 \
     --restart always \
     --privileged=true \
     -v $GITLAB_HOME/config:/etc/gitlab \
