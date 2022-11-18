@@ -92,9 +92,10 @@ gitlab_rails['gitlab_shell_ssh_port'] = 3002
 #配置http协议所使用的访问地址,不加端口号默认为80
 external_url 'http://182.42.116.xxx:3080'
 nginx['listen_port'] = 3080
+
 # 配置ssh协议所使用的访问地址和端口
 gitlab_rails['gitlab_ssh_host'] = '182.42.116.xxx'
-# 此端口是run时22端口映射的2222端口
+# 此端口是run时22端口映射的3002端口
 gitlab_rails['gitlab_shell_ssh_port'] = 3002
 ```
 
