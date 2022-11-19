@@ -11,3 +11,16 @@
 $ docker run -d eip-base/jdk:latest /bin/sh -c "while true;do echo hello zzyy;sleep 2;done"
 ```
 
+### 官方网址
+
+[国内镜像仓库地址](http://hub.daocloud.io/)
+
+[Kubernets官网](https://kubernetes.io/#)
+
+[Maven](https://maven.apache.org/)
+
+[Jenkins](https://www.jenkins.io/)
+
+[]()
+
+[]()

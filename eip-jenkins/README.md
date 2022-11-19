@@ -15,6 +15,9 @@
 ```bash
 docker pull jenkins/jenkins:latest-jdk8
 docker images | grep jenkins
+
+# 最新稳定版：2022-11-14
+docker pull   
 ```
 ### 2.查看镜像版本
 ```bash
@@ -155,6 +158,10 @@ build monitor view
 4. jenkins项目构建中增加触发器：Build Triggers -> Build when a change is pushed to GitLab -> Generate
    保存：webhook URL 和 `secret token`
 5. gitlab项目中：Settings -> Webhooks 添加URL和Secret token
+
+# webhook配置
+像我这就配置成   http://admin:xxxx@192.168.10.418080/job/test/build?token=12345678
+admin：是jenkins的web登陆账号，xxxx就是对应的密码，自己清楚
 ```
 
 - 增加触发器
