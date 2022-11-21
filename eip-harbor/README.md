@@ -97,7 +97,7 @@ openssl x509 -inform PEM -in xxx.61.41.102.crt -out xxx.61.41.102.cert
 ```
 3.将服务器证书，密钥和CA文件复制到Harbor主机上的Docker 证书文件夹中
 ``` bash
-mkdir /etc/docker/certs.d/xxx.61.41.102
+mkdir -p /etc/docker/certs.d/xxx.61.41.102
 cp xxx.61.41.102.cert /etc/docker/certs.d/xxx.61.41.102/
 cp xxx.61.41.102.key /etc/docker/certs.d/xxx.61.41.102/
 cp xxx.61.41.102.crt /etc/docker/certs.d/xxx.61.41.102/

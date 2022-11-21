@@ -57,7 +57,7 @@ psql -U sonar -W
 
 ### 四、安装`SonarQube`
 
-- 修改Linux配置
+- 修改Linux最大虚拟内存配置
 > 不修改配置，启动报错：max virtual memory areas vm.max_map_count [65530] is too low, increase to at least [262144]
 ```bash
 vim /etc/sysctl.conf
@@ -101,3 +101,97 @@ docker logs -f sonarqube
 > http://xxx.xxx.xx:3009
 > 
 > admin/admin
+
+
+### 五、`Sonarqube`的使用方式
+- 基于`Maven`的方式
+> 修改`maven的settings.xml`文件
+```xml
+<profiles>
+    <profile>    
+        <id>jdk1.8</id>    
+        <activation>    
+            <activeByDefault>true</activeByDefault>    
+            <jdk>1.8</jdk>    
+        </activation>    
+        <properties>    
+            <maven.compiler.source>1.8</maven.compiler.source>    
+            <maven.compiler.target>1.8</maven.compiler.target>    
+            <maven.compiler.compilerVersion>1.8</maven.compiler.compilerVersion>    
+        </properties>     
+    </profile>
+    <profile>
+        <id>sonar</id>
+        <activation>
+            <activeByDefault>true</activeByDefault>
+        </activation>
+        <properties>
+            <sonar.login>admin</sonar.login>
+            <sonar.password>abcd1234</sonar.password>
+            <sonar.host.url>http://xxx.xxx.xx.xx:3009</sonar.host.url>
+        </properties>
+    </profile>
+<profiles>
+    
+<activeProfiles>
+    <activeProfile>jdk8</activeProfile>
+    <activeProfile>sonar</activeProfile>
+</activeProfiles>
+```
+> 在代码中使用命令
+```bash
+mvn sonar:sonar
+```
+
+- 基于`sonar-scannner`的方式
+
+[下载地址](https://docs.sonarqube.org/latest/analysis/scan/sonarscanner/)
+
+> 解压到`Jenkins`的`jenkins_home`目录中
+```bash
+# 解压
+unzip sonar-scanner-cli-4.7.0.2747-linux.zip
+
+# 移动到jenkins_home目录下
+cd /opt/jenkins/jenkins_home
+mv /opt/install/sonar-scanner-cli-4.7.0.2747-linux ./sonar-scanner
+```
+
+> 修改`sonar-scanner`配置
+```bash
+cd sonar-scanner
+vim conf/sonar-scanner.properties
+
+# 修改连接sonarqube地址，这里可以不指定用户名、密码。通过token方式来访问
+sonar.host.url=http://140.xx.xx.99:9000
+sonar.sourceEncoding=UTF-8
+```
+
+> 命令行使用
+```bash
+# 在项目目录下
+cd /opt/jenkins/jenkins_home/workspace/eip-test
+
+# 执行检测命令
+/opt/jenkins/jenkins_home/sonar-scanner/bin/sonar-scanner \
+-Dsonar.projectname=eip-test \
+-Dsonar.sources=./ \
+-Dsonar.java.binaries=./target/ \
+-Dsonar.login=0f24d3019b195a3d121e728235f3cd1c595496f8 \
+-Dsonar.projectKey=eip-test
+```
+
+> `Jenkins`整合`sonar-scanner`插件
+```properties
+SonarQube Scanner
+```
+
+> `Jenkins`系统管理`sonar-scanner`配置
+```properties
+1. SonarQube servers
+2. Name
+3. Server Rul
+4. authentication token
+```
+
+> `Jenkins`全局工具配置`sonar-scanner`
