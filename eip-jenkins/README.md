@@ -128,9 +128,16 @@ Parameterized Trigger
 Parameterized Remote Trigger
 Localization: Chinese (Simplified)
 
+# 推送三方消息插件
 DingTalk
 Qy Wechat Notification
 build monitor view
+
+# pipeline脚本用到
+# 获取构建用户变量
+build user vars
+# 获取构建时间变量
+Build Timestamp
 ```
 ![](https://ae03.alicdn.com/kf/H74d6477bb5e0415f99b1d679156c386dj.png)
 

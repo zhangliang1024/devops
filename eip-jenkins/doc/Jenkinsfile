@@ -1,0 +1,98 @@
+pipeline {
+    //集群环境下，指定构建节点
+    agent any
+
+    //指定环境变量
+    environment {
+        harborAddr = "140.xxx.154.99:x008"
+        harborRepo = "library"
+        harborUser = "admin"
+        harborPass = "Harbor12345"
+    }
+
+    //指定构建步骤
+    stages {
+        stage('拉取代码从Gitlab') {
+            steps {
+                checkout([$class: 'GitSCM', branches: [[name: '${tag}']], extensions: [], userRemoteConfigs: [[credentialsId: '71789cbb-c3b1-479d-b6fe-a551c177e027', url: 'http://140.xxx.154.99:x08x/eip/eip-test.git']]])
+                echo '拉取代码从Gitlab - SUCCESS'
+            }
+        }
+        stage('通过Maven构建项目') {
+            steps {
+                sh '/var/jenkins_home/maveen-3.8.6/bin/mvn clean package -Dmaven.test.skip=true -U'
+                echo '通过Maven构建项目 - SUCCESS'
+            }
+        }
+        stage('通过Sonarqube进行质量检测') {
+            steps {
+                sh '/var/jenkins_home/sonar-scanner/bin/sonar-scanner -Dsonar.host.url=http://140.xxx.154.99:x00x -Dsonar.login=cfa66ae4e7a5e79854ec9dd5bd9f90ac32247aa3  -Dsonar.projectKey=${JOB_NAME} -Dsonar.projectname=${JOB_NAME} -Dsonar.java.binaries=./target/ -Dsonar.source=./ -Dsonar.projectBaseDir=/var/jenkins_home/workspace/${JOB_NAME} '
+                echo '通过Sonarqube进行质量检测 - SUCCESS'
+            }
+        }
+        stage('通过Docker进行镜像构建') {
+            steps {
+                sh '''mv ./target/*jar ./docker/
+                      docker build -t ${JOB_NAME}:${tag} ./docker/
+                   '''
+                echo '通过Docker进行镜像构建 - SUCCESS'
+            }
+        }
+        stage('推送到远程Harbor仓库') {
+            steps {
+                sh '''
+                    docker login -u ${harborUser} -p ${harborPass} ${harborAddr}
+                    docker tag ${JOB_NAME}:${tag} ${harborAddr}/${harborRepo}/${JOB_NAME}:${tag}
+                    docker push ${harborAddr}/${harborRepo}/${JOB_NAME}:${tag}
+                 '''
+                echo '推送到远程Harbor仓库 - SUCCESS'
+            }
+        }
+        stage('通知远程服务启动项目') {
+            steps {
+                sshPublisher(publishers: [sshPublisherDesc(configName: 'eip-base',
+                transfers: [
+                    sshTransfer(cleanRemote: false, excludes: '',
+                    execCommand: '''
+                        cd /eip/pipeline
+                        chmod +x deploy.sh
+                        sh deploy.sh 140.xxx.154.99:x00x library ${JOB_NAME} ${tag} 8088 8088 >> deploy.log
+                    ''',
+                    execTimeout: 120000, flatten: false, makeEmptyDirs: false, noDefaultExcludes: false,
+                    patternSeparator: '[, ]+', remoteDirectory: 'pipeline', remoteDirectorySDF: false, removePrefix: '',
+                    sourceFiles: 'target/*.jar docker/* build.sh deploy.sh')
+                ],
+                usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: false)]
+                )
+                echo '通知远程服务启动项目 - SUCCESS'
+            }
+        }
+        stage('配置构建人变量') {
+            steps {
+               wrap([$class: 'BuildUser']) {
+                  script {
+                       BUILD_USER = "${env.BUILD_USER}"
+                       BUILD_USER_ID ="${BUILD_USER_ID}"
+                  }
+               }
+               script {
+                   env.BUILD_USERNAME = "${BUILD_USER}"
+                   env.BUILD_USERNAMEID = "${BUILD_USER_ID}"
+               }
+            }
+        }
+
+    }
+    post {
+        success {
+            script {
+                sh 'export TYPE=success;export JOB_NAME="${JOB_BASE_NAME}";export BUILD_NUM="$BUILD_NUMBER";export BUILD_TIME="$BUILD_TIMESTAMP";export BUILD_USER="${BUILD_USERNAME}"; export URL_JOB="${BUILD_URL}";export URL_LOG="${BUILD_URL}console";export JOB_TIPS1="${BUILD_USERNAMEID}" ;sh send_message_export.sh'
+            }
+        }
+        failure {
+            script {
+                sh 'export TYPE=failure;export JOB_NAME="${JOB_BASE_NAME}";export BUILD_NUM="$BUILD_NUMBER";export BUILD_TIME="$BUILD_TIMESTAMP"; export BUILD_USER="${BUILD_USERNAME}"; export URL_JOB="${BUILD_URL}";export URL_LOG="${BUILD_URL}console";export JOB_TIPS1="${BUILD_USERNAMEID}" ;sh send_message_export.sh'
+            }
+        }
+   }
+}
