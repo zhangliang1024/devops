@@ -212,6 +212,21 @@ docker run --name skywalking-ui \
 ```
 ![](https://ae05.alicdn.com/kf/H30a80f6439624f5999df39d415eb45e5j.png)
 
+- 采样率设置
+> 默认情况下，`skywalking`会采集所有追踪的数据轨迹。设置采样率并不会影响相关指标的计算（服务、实例、端点、拓扑图等还是使用完整的数据计算）。
+
+- `config/application.yml`
+> - 默认配置10000，采样率精确到1/10000，即10000 * 1/10000 = 1 = 100%。
+> - 假设我们设计采样50%，那么设置为5000
+```yml
+receiver-trace:
+  selector: ${SW_RECEIVER_TRACE:default}
+  default:
+    sampleRate: ${SW_TRACE_SAMPLE_RATE:5000}
+```
+- 建议
+> 后算实例可以设置不同的采样率，但是官方建议设置为同样的值。
+
 ### 七、日志集成`TraceId`
 - `pom.xml`
 ```xml
@@ -238,14 +253,15 @@ docker run --name skywalking-ui \
         </layout>
     </encoder>
 </appender>
+
 <!-- skywalking grpc 日志收集 8.4.0版本开始支持 -->
-    <appender name="grpc-log" class="org.apache.skywalking.apm.toolkit.log.logback.v1.x.log.GRPCLogClientAppender">
-        <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
-            <layout class="org.apache.skywalking.apm.toolkit.log.logback.v1.x.mdc.TraceIdMDCPatternLogbackLayout">
-                <Pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%tid] [%thread] %-5level %logger{36} -%msg%n</Pattern>
-            </layout>
-        </encoder>
-    </appender>
+<appender name="grpc-log" class="org.apache.skywalking.apm.toolkit.log.logback.v1.x.log.GRPCLogClientAppender">
+<encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+    <layout class="org.apache.skywalking.apm.toolkit.log.logback.v1.x.mdc.TraceIdMDCPatternLogbackLayout">
+        <Pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%tid] [%thread] %-5level %logger{36} -%msg%n</Pattern>
+    </layout>
+</encoder>
+</appender>
 
 ```
 

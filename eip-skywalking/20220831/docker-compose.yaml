@@ -1,4 +1,4 @@
-version: "3"
+version: "3.4"
 networks:
   monitor:
     driver: bridge
@@ -13,10 +13,16 @@ services:
     ports:
       - "9200:9200"
       - "9300:9300"
+    healthcheck:
+      test: ["CMD-SHELL", "curl --silent --fail localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     volumes:
-      - "/home/elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml"
-      - "/home/elasticsearch/data:/usr/share/elasticsearch/data"
-      - "/home/elasticsearch/logs:/usr/share/elasticsearch/logs"
+      - "${PWD}/elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml"
+      - "${PWD}/elasticsearch/data:/usr/share/elasticsearch/data"
+      - "${PWD}/elasticsearch/logs:/usr/share/elasticsearch/logs"
     environment:
       - "discovery.type=single-node"
       - "ES_JAVA_OPTS=-Xms512m -Xmx1024m"
@@ -24,13 +30,19 @@ services:
       - monitor
 
   oap:
-    image: apache/skywalking-oap-server:8.7.0-es7
+    image: apache/skywalking-oap-server:9.2.0
     container_name: oap
     hostname: oap
     restart: always
     ports:
       - "11800:11800"
       - "12800:12800"
+    healthcheck:
+      test: [ "CMD-SHELL", "/skywalking/bin/swctl" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     environment:
       - TZ=Asia/Shanghai
       - SW_STORAGE=elasticsearch7
@@ -43,7 +55,7 @@ services:
       - elasticsearch
 
   oap-ui:
-    image: apache/skywalking-ui:8.7.0
+    image: apache/skywalking-ui:9.2.0
     container_name: oap-ui
     hostname: oap-ui
     restart: always

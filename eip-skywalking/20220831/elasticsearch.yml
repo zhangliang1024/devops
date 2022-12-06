@@ -3,5 +3,5 @@ http.host: 0.0.0.0
 http.cors.enabled: true
 http.cors.allow-origin: "*"
 http.cors.allow-headers: Authorization,X-Requested-With,Content-Length,Content-Type
-xpack.security.enabled: true
-xpack.security.transport.ssl.enabled: true
+#xpack.security.enabled: true
+#xpack.security.transport.ssl.enabled: true

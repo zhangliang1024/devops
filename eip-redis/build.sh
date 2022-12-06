@@ -14,9 +14,10 @@ docker run -d \
 
 docker logs -f redis
 
-sudo docker run -p 6379:6379
---name redis
--v /data/redis/data/redis.conf:/etc/redis/redis.conf  \
--v /data/redis/data:/data \
--d redis redis-server /etc/redis/redis.conf \
---appendonly yes
+docker run -d \
+    -p 6379:6379 \
+    --name redis \
+    -v /data/redis/data/redis.conf:/etc/redis/redis.conf  \
+    -v /data/redis/data:/data \
+    -d redis redis-server /etc/redis/redis.conf \
+    --appendonly yes

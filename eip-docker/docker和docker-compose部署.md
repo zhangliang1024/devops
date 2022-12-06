@@ -141,8 +141,23 @@ sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
 docker-compose --version
 ```
 
+### 五、`docker-compose`中`healthcheck`
+> [官网](https://docs.docker.com/compose/compose-file/compose-file-v3/) 
+> 注意：`start_period`参数，在`Version 2.3`和`Version 3.4`中引入
+```yml
+version: '3.4'
+
+healthcheck:
+  test: ["CMD", "curl", "-f", "http://localhost"]
+  interval: 1m30s
+  timeout: 10s
+  retries: 3
+  start_period: 40s
+```
+
+
 ---
-### 四、参考博客
+### 六、参考博客
 [centOS7配置yum阿里源并安装docker最新版](https://blog.csdn.net/qq_40715775/article/details/85913994)
 
 [centos7使用国内源安装指定版本docker，docker-compose，配置阿里云docker镜像加速器](https://www.cnblogs.com/yyee/p/12905165.html)
