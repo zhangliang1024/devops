@@ -1,0 +1,42 @@
+version: "3.1"
+
+services:
+  oap:
+    image: apache/skywalking-oap-server:9.2.0
+    container_name: oap
+    restart: always
+    ports:
+      - "11800:11800"
+      - "12800:12800"
+    environment:
+      - TZ=Asia/Shanghai
+      - SW_STORAGE=elasticsearch
+      - SW_STORAGE_ES_CLUSTER_NODES=192.168.100.200:9200,192.168.100.201:9200,192.168.100.202:9200
+      - SW_CLUSTER=zookeeper
+      - SW_CLUSTER_ZK_HOST_PORT=192.168.100.200:2181,192.168.100.201:2181,192.168.100.202:2181
+      - SW_KAFKA_FETCHER=default
+      - SW_KAFKA_FETCHER_SERVERS=192.168.100.200:9092,192.168.100.201:9092,192.168.100.202:9092
+      - SW_KAFKA_FETCHER_PARTITIONS_FACTOR=1
+    networks:
+      - monitor
+
+  oap-ui:
+    image: apache/skywalking-ui:9.2.0
+    container_name: oap-ui
+    restart: always
+    privileged: true
+    ports:
+      - "8090:8080"
+    environment:
+      - TZ=Asia/Shanghai
+      - SW_OAP_ADDRESS=http://oap:12800
+    networks:
+      - monitor
+    depends_on:
+      - oap
+    links:
+      - oap
+
+networks:
+  monitor:
+    driver: bridge
