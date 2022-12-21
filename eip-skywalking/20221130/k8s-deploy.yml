@@ -1,0 +1,134 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gateway
+  namespace: one-piece
+  labels:
+    app: gateway
+    version: v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gateway
+  template:
+    metadata:
+      labels:
+        app: gateway
+    spec:
+      volumes:
+        - name: skywalking-agent
+          emptyDir: {}
+      initContainers:
+        - name: sw-agent
+          image: 192.168.100.86/library/skywalking-agent:8.13.0
+          imagePullPolicy: Always
+          command:
+            - /bin/sh
+          args:
+            - '-c'
+            - cp -R /skywalking/agent /agent/
+          resources:
+            limits:
+              cpu: 250m
+              memory: 500Mi
+            requests:
+              cpu: 200m
+              memory: 500Mi
+          volumeMounts:
+            - name: skywalking-agent
+              mountPath: /agent
+
+      containers:
+        - name: gateway
+          image: 192.168.100.86/dec/gateway:0.0.3
+          imagePullPolicy: Always
+          command:
+            - ./run.sh
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+            - name: monitor
+              containerPort: 8099
+              protocol: TCP
+          env:
+            - name: SERVER_PORT
+              value: '8080'
+            - name: PROFILE
+              value: dev
+            - name: NACOS_DISCOVERY_URI
+              value: 'nacos.one-piece.svc:8848'
+            - name: NACOS_CONFIG_URI
+              value: 'nacos.one-piece.svc:8848'
+            - name: NACOS_SERVER_PORT
+              value: '8848'
+            - name: NACOS_DISCOVERY_NAMESPACE
+              value: 2388e659-6c6b-4cb9-9783-4ca79a35562c
+            - name: NACOS_CONFIG_NAMESPACE
+              value: 2388e659-6c6b-4cb9-9783-4ca79a35562c
+            - name: NACOS_USERNAME
+              value: one-piece
+            - name: NACOS_PASSWORD
+              value: hZv1lPnskTQ
+            - name: SW_AGENT_NAME
+              value: 'jingyou-k8s::jingyou-k8s-gateway'
+            - name: SW_AGENT_COLLECTOR_BACKEND_SERVICES
+              value: 'skywalking-oap.one-piece:11800'
+            - name: SW_KAFKA_BOOTSTRAP_SERVERS
+              value: 'kafka.one-piece:9094'
+            - name: JAVA_TOOL_OPTIONS
+              value: '-javaagent:/skywalking/agent/skywalking-agent.jar'
+            - name: JAVA_OPTS
+              value: '-Duser.timezone=GMT+8 -Xms1024m -Xmx1024m '
+          resources:
+            limits:
+              cpu: 1000m
+              memory: 2048Mi
+            requests:
+              cpu: 500m
+              memory: 1024Mi
+          volumeMounts:
+            - name: skywalking-agent
+              mountPath: /skywalking
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: monitor
+              scheme: HTTP
+            initialDelaySeconds: 60
+            timeoutSeconds: 10
+            periodSeconds: 30
+            successThreshold: 1
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: monitor
+              scheme: HTTP
+            initialDelaySeconds: 60
+            timeoutSeconds: 10
+            periodSeconds: 30
+            successThreshold: 1
+            failureThreshold: 3
+      imagePullSecrets:
+        - name: regcred
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: gateway
+  namespace: one-piece
+  labels:
+    app: gateway
+spec:
+  selector:
+    app: gateway
+  type: NodePort
+  ports:
+    - name: http
+      protocol: TCP
+      port: 8080
+      targetPort: 8080
+      nodePort: 31145
