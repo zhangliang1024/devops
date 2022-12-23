@@ -1,0 +1,114 @@
+version: '3.1'
+
+networks:
+  skywalking_networks:
+    ipam:
+      config:
+        - subnet: 192.168.200.0/24
+
+services:
+  nacos01:
+    image: nacos/nacos-server:latest
+    container_name: nacos01
+    networks:
+      skywalking_networks:
+        ipv4_address: 192.168.200.30
+    restart: on-failure
+    volumes:
+      #日志输出目录
+      - ./nacos/nacos01/logs:/home/nacos/logs
+      #../init.d/custom.properties内包含很多自定义配置，可按需配置
+      - ./nacos/init.d/custom.properties:/home/nacos/init.d/custom.properties
+    ports:
+      - "8847:8848"
+      - "9848:9848"
+      - "9555:9555"
+    environment:
+      #JVM调优参数
+      - JVM_XMS=128m
+      - JVM_XMX=128m
+      - JVM_XMN=128m
+      - JVM_MS=128m
+      - JVM_MMS=256m
+      #集群中其它节点[ip1:port ip2:port ip3:port]
+      - NACOS_SERVERS=192.168.200.30:8848 192.168.200.31:8848 192.168.200.32:8848
+      - MYSQL_SERVICE_HOST=mysql
+      - MYSQL_SERVICE_DB_NAME=nacos_devtest
+      - MYSQL_SERVICE_PORT=3306
+      - MYSQL_SERVICE_USER=nacos
+      - MYSQL_SERVICE_PASSWORD=nacos
+      - MYSQL_SERVICE_DB_PARAM=characterEncoding=utf8&connectTimeout=1000&socketTimeout=3000&autoReconnect=true&useUnicode=true&useSSL=false&serverTimezone=UTC
+    depends_on:
+      - mysql
+  nacos02:
+    image: nacos/nacos-server:latest
+    container_name: nacos02
+    networks:
+      skywalking_networks:
+        ipv4_address: 192.168.200.31
+    restart: on-failure
+    volumes:
+      - ./nacos/nacos02/logs:/home/nacos/logs
+      - ./nacos/init.d/custom.properties:/home/nacos/init.d/custom.properties
+    ports:
+      - "8849:8848"
+      - "9849:9848"
+    environment:
+      - JVM_XMS=128m
+      - JVM_XMX=512m
+      - JVM_XMN=256m
+      - JVM_MS=128m
+      - JVM_MMS=256m
+      - NACOS_SERVERS=192.168.200.30:8848 192.168.200.31:8848 192.168.200.32:8848
+      - MYSQL_SERVICE_HOST=mysql
+      - MYSQL_SERVICE_DB_NAME=nacos_devtest
+      - MYSQL_SERVICE_PORT=3306
+      - MYSQL_SERVICE_USER=nacos
+      - MYSQL_SERVICE_PASSWORD=nacos
+      - MYSQL_SERVICE_DB_PARAM=characterEncoding=utf8&connectTimeout=1000&socketTimeout=3000&autoReconnect=true&useUnicode=true&useSSL=false&serverTimezone=UTC
+    depends_on:
+      - mysql
+  nacos03:
+    image: nacos/nacos-server:latest
+    container_name: nacos03
+    networks:
+      skywalking_networks:
+        ipv4_address: 192.168.200.32
+    restart: on-failure
+    volumes:
+      - ./nacos/nacos03/logs:/home/nacos/logs
+      - ./nacos/init.d/custom.properties:/home/nacos/init.d/custom.properties
+    ports:
+      - "8850:8848"
+      - "9850:9848"
+    environment:
+      - JVM_XMS=128m
+      - JVM_XMX=128m
+      - JVM_XMN=128m
+      - JVM_MS=128m
+      - JVM_MMS=128m
+      - NACOS_SERVERS=192.168.200.30:8848 192.168.200.31:8848 192.168.200.32:8848
+      - MYSQL_SERVICE_HOST=mysql
+      - MYSQL_SERVICE_DB_NAME=nacos_devtest
+      - MYSQL_SERVICE_PORT=3306
+      - MYSQL_SERVICE_USER=nacos
+      - MYSQL_SERVICE_PASSWORD=nacos
+      - MYSQL_SERVICE_DB_PARAM=characterEncoding=utf8&connectTimeout=1000&socketTimeout=3000&autoReconnect=true&useUnicode=true&useSSL=false&serverTimezone=UTC
+    depends_on:
+      - mysql
+
+  mysql:
+    container_name: nacos-sql
+    image: nacos/nacos-mysql:5.7
+    networks:
+      skywalking_networks:
+        ipv4_address: 192.168.200.40
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=nacos_devtest
+      - MYSQL_USER=nacos
+      - MYSQL_PASSWORD=nacos
+    volumes:
+      - ./mysql:/var/lib/mysql
+    ports:
+      - "3307:3306"
