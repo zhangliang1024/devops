@@ -1,0 +1,74 @@
+version: "2"
+
+services:
+  knowstreaming-manager:
+    image: knowstreaming/knowstreaming-manager:latest
+    container_name: knowstreaming-manager
+    privileged: true
+    restart: always
+    depends_on:
+      - elasticsearch-single
+      - knowstreaming-mysql
+    expose:
+      - 80
+    command:
+      - /bin/sh
+      - /ks-start.sh
+    environment:
+      TZ: Asia/Shanghai
+      SERVER_MYSQL_ADDRESS: knowstreaming-mysql:3306
+      SERVER_MYSQL_DB: know_streaming
+      SERVER_MYSQL_USER: root
+      SERVER_MYSQL_PASSWORD: admin2022_
+      SERVER_ES_ADDRESS: elasticsearch-single:9200
+      JAVA_OPTS: -Xmx1g -Xms1g
+
+  knowstreaming-ui:
+    image: knowstreaming/knowstreaming-ui:latest
+    container_name: knowstreaming-ui
+    restart: always
+    ports:
+      - '8081:80'
+    environment:
+      TZ: Asia/Shanghai
+    depends_on:
+      - knowstreaming-manager
+
+  elasticsearch-single:
+    image: elasticsearch:7.14.0
+    container_name: elasticsearch-single
+    restart: always
+    expose:
+      - 9200
+      - 9300
+
+    environment:
+      TZ: Asia/Shanghai
+      ES_JAVA_OPTS: -Xms512m -Xmx512m
+      discovery.type: single-node
+
+  # es初始化服务，与manager使用同一镜像
+  # 首次启动es需初始化模版和索引,后续会自动创建
+  knowstreaming-init:
+    image: knowstreaming/knowstreaming-manager:latest
+    container_name: knowstreaming-init
+    depends_on:
+      - elasticsearch-single
+    command:
+      - /bin/bash
+      - /es_template_create.sh
+    environment:
+      TZ: Asia/Shanghai
+      SERVER_ES_ADDRESS: elasticsearch-single:9200
+
+  knowstreaming-mysql:
+    image: knowstreaming/knowstreaming-mysql:latest
+    container_name: knowstreaming-mysql
+    restart: always
+    environment:
+      TZ: Asia/Shanghai
+      MYSQL_ROOT_PASSWORD: admin2022_
+      MYSQL_DATABASE: know_streaming
+      MYSQL_ROOT_HOST: '%'
+    expose:
+      - 3306
