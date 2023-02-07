@@ -181,7 +181,7 @@ systemctl restart rsyslog.service
 - 执行步骤
 > 进入容器
 ```bash
-docker exce -it harbor-db /bin/bash
+docker exec -it harbor-db /bin/bash
 ```
 > 进入`postgresql`命令行
 ```bash
