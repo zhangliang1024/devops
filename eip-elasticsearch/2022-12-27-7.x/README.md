@@ -18,8 +18,8 @@ su elastic
 vim /etc/security/limits.conf
 # 添加以下内容：
 * soft nofile 65536
-* hard nofile 131072
-* soft nproc 2048
+* hard nofile 65536
+* soft nproc 4096
 * hard nproc 4096
 ```
 > 修改系统虚拟内存大小
@@ -32,3 +32,29 @@ vm.max_map_count=655360
 sysctl -p
 ```
 
+- `elasticsearch.yml` 配置
+```bash
+cluster:
+  name: elasticsearch
+http:
+  port: 9200
+  cors:
+    enabled: true
+    allow-origin: "*"
+path:
+  data: /bitnami/elasticsearch/data
+transport:
+  tcp:
+    port: 9300
+network:
+  host: 172.17.0.2
+  publish_host: 172.17.0.2
+  bind_host: 0.0.0.0
+node:
+  name: elasticsearch
+  master: true
+  data: true
+  ingest: false
+discovery:
+  type: single-node 
+```
