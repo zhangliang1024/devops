@@ -1,14 +1,8 @@
 cluster.name: elasticsearch-cluster
 node.name: node-1
 http.port: 9200
-#path.data: /opt/elasticsearch/data
-#path.logs: /opt/elasticsearch/logs
 
-# ES监听的ip地址
 network.host: 0.0.0.0
-cluster.initial_master_nodes: ["node-1"]
 
-# 需要开启跨域才能给elasticsearch-head，kibana等连接
 http.cors.enabled: true
 http.cors.allow-origin: "*"
-#http.cors.allow-headers: Authorization,X-Requested-With,Content-Length,Content-Type
