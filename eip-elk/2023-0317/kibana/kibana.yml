@@ -1,0 +1,7 @@
+server.port: 5601
+server.name: "kibana"
+server.host: "0.0.0.0"
+elasticsearch.hosts: ["http://es:9200"]
+i18n.locale: "zh-CN"
+elastalert-kibana-plugin.serverHost: 140.246.154.99
+elastalert-kibana-plugin.serverPort: 3030

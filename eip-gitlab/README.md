@@ -35,20 +35,21 @@
 
 docker stop gitlab && docker rm gitlab
 
-GITLAB_HOME=/usr/local/gitlab
-
-docker run -d --name gitlab \
-    --hostname 140.246.xxx.99 \
-    -p 3003:443 \
-    -p 3080:3080 \
-    -p 3002:22 \
-    --restart always \
-    --privileged=true \
-    -v $GITLAB_HOME/config:/etc/gitlab \
-    -v $GITLAB_HOME/logs:/var/log/gitlab \
-    -v $GITLAB_HOME/data:/var/opt/gitlab \
-    -e GITLAB_ROOT_PASSWORD=12345678 \
-    gitlab/gitlab-ce:latest
+docker run -d \
+	--name=gitlab \
+	--restart=unless-stopped \
+	--privileged=true \
+	--hostname 172.29.34.21 \
+	-p 3080:80 \
+	-p 3022:22 \
+	-p 3443:443 \
+	-v ${PWD}/config:/etc/gitlab \
+	-v ${PWD}/logs:/var/log/gitlab \
+	-v ${PWD}/data:/var/opt/gitlab \
+	-e GITLAB_ROOT_PASSWORD=12345678 \
+	gitlab/gitlab-ce:15.5.0-ce.0
+	
+docker logs -f docker	
     
 ```
 > 参数说明

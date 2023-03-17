@@ -25,8 +25,8 @@ services:
       - ${PWD}/config/broker.conf:/etc/rocketmq/broker.conf
     environment:
       NAMESRV_ADDR: "rmqnamesrv:9876"
-      JAVA_OPTS: " -Duser.home=/opt"
-      JAVA_OPT_EXT: "-server -Xms128m -Xmx128m -Xmn128m"
+      JAVA_OPTS: "-Duser.home=/opt"
+      JAVA_OPT: "-server -Xms128m -Xmx128m -Xmn128m"
     command: mqbroker -c /etc/rocketmq/broker.conf
     depends_on:
       - rmqnamesrv

@@ -1,6 +1,6 @@
 #/bin/bash
 
-mkdir elasticsearch
+mkdir {elasticsearch,logstash,kibana}
 
 chmod 777 ${PWD}/elasticsearch
 
