@@ -1,0 +1,31 @@
+version: '3.2'
+services:
+  yapi-web:
+    image: jayfong/yapi:latest
+    container_name: yapi-web
+    ports:
+      - 8013:3000
+    environment:
+      - YAPI_ADMIN_ACCOUNT=samic@gmail.com
+      - YAPI_ADMIN_PASSWORD=123456
+      - YAPI_CLOSE_REGISTER=true
+      - YAPI_DB_SERVERNAME=yapi-mongo
+      - YAPI_DB_PORT=27017
+      - YAPI_DB_DATABASE=yapi
+      - YAPI_MAIL_ENABLE=false
+      - YAPI_LDAP_LOGIN_ENABLE=false
+      - YAPI_PLUGINS=[]
+    depends_on:
+      - yapi-mongo
+    links:
+      - yapi-mongo
+    restart: unless-stopped
+
+  yapi-mongo:
+    image: mongo:4.4.16
+    container_name: yapi-mongo
+    volumes:
+      - ${PWD}/data/db:/data/db
+    expose:
+      - 27017
+    restart: unless-stopped
