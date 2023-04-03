@@ -64,6 +64,7 @@ management:
 
 ### 2.模板推荐
 > [模板查询](https://grafana.com/grafana/dashboards/?)
+> [Springboot模板](https://grafana.com/grafana/dashboards/12900-springboot-apm-dashboard/)
 ```properties
 node 11074
 mysql 7362
